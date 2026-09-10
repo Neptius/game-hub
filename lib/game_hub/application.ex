@@ -11,6 +11,7 @@ defmodule GameHub.Application do
       GameHubWeb.Telemetry,
       GameHub.Repo,
       {DNSCluster, query: Application.get_env(:game_hub, :dns_cluster_query) || :ignore},
+      {Oban, Application.fetch_env!(:game_hub, Oban)},
       {Phoenix.PubSub, name: GameHub.PubSub},
       # Start a worker by calling: GameHub.Worker.start_link(arg)
       # {GameHub.Worker, arg},
