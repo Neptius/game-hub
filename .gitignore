@@ -35,3 +35,5 @@ game_hub-*.tar
 npm-debug.log
 /assets/node_modules/
 
+/uploads/
+
