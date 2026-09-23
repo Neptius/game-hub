@@ -35,7 +35,10 @@ defmodule GameHubWeb.Bg3Live.Index do
           </.link>
         </div>
 
-        <div :if={Enum.empty?(@characters)} class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-10 text-center">
+        <div
+          :if={Enum.empty?(@characters)}
+          class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-10 text-center"
+        >
           <p class="text-lg text-zinc-300">Aucun personnage sauvegardé pour le moment.</p>
           <.link
             navigate={~p"/baldurs-gate-3/characters/new"}
@@ -72,7 +75,9 @@ defmodule GameHubWeb.Bg3Live.Index do
 
             <div class="mt-4 space-y-2 text-sm text-zinc-300">
               <p><span class="text-zinc-500">Classe :</span> {character.class}</p>
-              <p :if={character.subclass}><span class="text-zinc-500">Sous-classe :</span> {character.subclass}</p>
+              <p :if={character.subclass}>
+                <span class="text-zinc-500">Sous-classe :</span> {character.subclass}
+              </p>
               <p><span class="text-zinc-500">Historique :</span> {character.background}</p>
             </div>
 

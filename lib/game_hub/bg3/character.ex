@@ -58,8 +58,12 @@ defmodule GameHub.Bg3.Character do
     |> validate_length(:name, greater_than_or_equal_to: 2, less_than_or_equal_to: 80)
     |> validate_inclusion(:race, supported_races(), message: "is not a supported race")
     |> validate_inclusion(:class, supported_classes(), message: "is not a supported class")
-    |> validate_inclusion(:background, supported_backgrounds(), message: "is not a supported background")
-    |> validate_inclusion(:alignment, supported_alignments(), message: "is not a supported alignment")
+    |> validate_inclusion(:background, supported_backgrounds(),
+      message: "is not a supported background"
+    )
+    |> validate_inclusion(:alignment, supported_alignments(),
+      message: "is not a supported alignment"
+    )
     |> validate_number(:strength, greater_than_or_equal_to: 3, less_than_or_equal_to: 20)
     |> validate_number(:dexterity, greater_than_or_equal_to: 3, less_than_or_equal_to: 20)
     |> validate_number(:constitution, greater_than_or_equal_to: 3, less_than_or_equal_to: 20)

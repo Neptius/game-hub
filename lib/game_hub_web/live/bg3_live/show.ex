@@ -72,12 +72,36 @@ defmodule GameHubWeb.Bg3Live.Show do
           <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6">
             <h2 class="mb-4 text-xl font-semibold text-white">Caractéristiques</h2>
             <dl class="grid grid-cols-2 gap-4 text-sm text-zinc-300">
-              <div class="rounded-xl bg-zinc-950/60 p-3"><dt class="text-zinc-500">Force</dt><dd class="mt-1 text-lg text-white">{@character.strength}</dd></div>
-              <div class="rounded-xl bg-zinc-950/60 p-3"><dt class="text-zinc-500">Dextérité</dt><dd class="mt-1 text-lg text-white">{@character.dexterity}</dd></div>
-              <div class="rounded-xl bg-zinc-950/60 p-3"><dt class="text-zinc-500">Constitution</dt><dd class="mt-1 text-lg text-white">{@character.constitution}</dd></div>
-              <div class="rounded-xl bg-zinc-950/60 p-3"><dt class="text-zinc-500">Intelligence</dt><dd class="mt-1 text-lg text-white">{@character.intelligence}</dd></div>
-              <div class="rounded-xl bg-zinc-950/60 p-3"><dt class="text-zinc-500">Sagesse</dt><dd class="mt-1 text-lg text-white">{@character.wisdom}</dd></div>
-              <div class="rounded-xl bg-zinc-950/60 p-3"><dt class="text-zinc-500">Charisme</dt><dd class="mt-1 text-lg text-white">{@character.charisma}</dd></div>
+              <div class="rounded-xl bg-zinc-950/60 p-3">
+                <dt class="text-zinc-500">Force</dt><dd class="mt-1 text-lg text-white">
+                  {@character.strength}
+                </dd>
+              </div>
+              <div class="rounded-xl bg-zinc-950/60 p-3">
+                <dt class="text-zinc-500">Dextérité</dt><dd class="mt-1 text-lg text-white">
+                  {@character.dexterity}
+                </dd>
+              </div>
+              <div class="rounded-xl bg-zinc-950/60 p-3">
+                <dt class="text-zinc-500">Constitution</dt><dd class="mt-1 text-lg text-white">
+                  {@character.constitution}
+                </dd>
+              </div>
+              <div class="rounded-xl bg-zinc-950/60 p-3">
+                <dt class="text-zinc-500">Intelligence</dt><dd class="mt-1 text-lg text-white">
+                  {@character.intelligence}
+                </dd>
+              </div>
+              <div class="rounded-xl bg-zinc-950/60 p-3">
+                <dt class="text-zinc-500">Sagesse</dt><dd class="mt-1 text-lg text-white">
+                  {@character.wisdom}
+                </dd>
+              </div>
+              <div class="rounded-xl bg-zinc-950/60 p-3">
+                <dt class="text-zinc-500">Charisme</dt><dd class="mt-1 text-lg text-white">
+                  {@character.charisma}
+                </dd>
+              </div>
             </dl>
           </div>
         </div>

@@ -74,7 +74,6 @@ defmodule GameHubWeb.Router do
       live "/baldurs-gate-3/characters/:id", Bg3Live.Show, :show
     end
 
-
     post "/users/log-in", UserSessionController, :create
     delete "/users/log-out", UserSessionController, :delete
   end
