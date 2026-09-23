@@ -67,7 +67,13 @@ defmodule GameHubWeb.Router do
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new
       live "/users/log-in/:token", UserLive.Confirmation, :new
+
+      live "/baldurs-gate-3/characters", Bg3Live.Index, :index
+      live "/baldurs-gate-3/characters/new", Bg3Live.CharacterBuilder, :new
+      live "/baldurs-gate-3/characters/:id/edit", Bg3Live.CharacterBuilder, :edit
+      live "/baldurs-gate-3/characters/:id", Bg3Live.Show, :show
     end
+
 
     post "/users/log-in", UserSessionController, :create
     delete "/users/log-out", UserSessionController, :delete

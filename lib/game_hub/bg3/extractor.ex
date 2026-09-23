@@ -1,12 +1,12 @@
-defmodule GameHub.BG3.Pak.Extractor do
+defmodule GameHub.Bg3.Pak.Extractor do
   @moduledoc """
   Module responsible for extracting data from BG3 .pak files.
   """
 
-  alias GameHub.BG3.Pak.Reader
+  alias GameHub.Bg3.Pak.Reader
 
   def start do
-    GameHub.BG3.Pak.Extractor.extract(
+    GameHub.Bg3.Pak.Extractor.extract(
       "./uploads/BG3/Mods/HomeBrew - Comprehensive Reworks.pak",
       "./uploads/BG3/Mods/HomeBrew-extracted"
     )
@@ -14,10 +14,10 @@ defmodule GameHub.BG3.Pak.Extractor do
 
   def debug do
     {:ok, pak} =
-      GameHub.BG3.Pak.Reader.open("./uploads/BG3/Mods/HomeBrew - Comprehensive Reworks.pak")
+      GameHub.Bg3.Pak.Reader.open("./uploads/BG3/Mods/HomeBrew - Comprehensive Reworks.pak")
 
     {:ok, data} =
-      GameHub.BG3.Pak.Reader.read(
+      GameHub.Bg3.Pak.Reader.read(
         pak,
         "Mods/HomeBrew - Comprehensive Reworks/meta.lsx"
       )

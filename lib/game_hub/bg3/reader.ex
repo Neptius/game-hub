@@ -1,4 +1,4 @@
-defmodule GameHub.BG3.Pak.Reader do
+defmodule GameHub.Bg3.Pak.Reader do
   @moduledoc """
   Module responsible for reading and parsing BG3 .pak files.
   """
@@ -22,7 +22,7 @@ defmodule GameHub.BG3.Pak.Reader do
          entries: entries
        }}
     else
-      {:error, reason} = error ->
+      {:error, _reason} = error ->
         error
     end
   end
