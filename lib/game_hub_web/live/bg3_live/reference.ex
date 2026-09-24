@@ -86,6 +86,81 @@ defmodule GameHub.Bg3.Reference do
     "Occultiste" => ["Le Pacte du Diable", "Le Pacte de la Faucheuse", "Le Pacte du Ciel"]
   }
 
+  @class_passives %{
+    "Barbare" => [
+      "Rage renforcée",
+      "Instinct sauvage",
+      "Peau endurcie",
+      "Frappe brutale"
+    ],
+    "Barde" => [
+      "Inspiration améliorée",
+      "Maîtrise musicale",
+      "Paroles galvanisantes",
+      "Esprit créatif"
+    ],
+    "Clerc" => [
+      "Canalisation divine",
+      "Guérison renforcée",
+      "Foi inébranlable",
+      "Protecteur sacré"
+    ],
+    "Druide" => [
+      "Connexion naturelle",
+      "Forme sauvage améliorée",
+      "Peau végétale",
+      "Sagesse des anciens"
+    ],
+    "Guerrier" => [
+      "Maîtrise martiale",
+      "Second souffle renforcé",
+      "Garde disciplinée",
+      "Frappe précise"
+    ],
+    "Moine" => [
+      "Défense sans armure",
+      "Ki renforcé",
+      "Pas éclair",
+      "Discipline intérieure"
+    ],
+    "Paladin" => [
+      "Aura de courage",
+      "Châtiment renforcé",
+      "Serment inébranlable",
+      "Présence imposante"
+    ],
+    "Rôdeur" => [
+      "Chasseur attentif",
+      "Pisteur expert",
+      "Compagnon renforcé",
+      "Instinct de survie"
+    ],
+    "Roublard" => [
+      "Expertise améliorée",
+      "Frappe sournoise",
+      "Évasion",
+      "Pas silencieux"
+    ],
+    "Ensorceleur" => [
+      "Métamagie renforcée",
+      "Réserve magique",
+      "Affinité élémentaire",
+      "Volonté surnaturelle"
+    ],
+    "Magicien" => [
+      "Récupération arcanique",
+      "Étude spécialisée",
+      "Concentration supérieure",
+      "Mémoire magique"
+    ],
+    "Occultiste" => [
+      "Invocation occulte",
+      "Pacte renforcé",
+      "Maîtrise des maléfices",
+      "Volonté obscure"
+    ]
+  }
+
   def races, do: @races
   def classes, do: @classes
   def backgrounds, do: @backgrounds
@@ -93,4 +168,8 @@ defmodule GameHub.Bg3.Reference do
 
   def subraces_for(race), do: Map.get(@subraces, race, [])
   def subclasses_for(class), do: Map.get(@subclasses, class, [])
+
+  def passives_for(class) do
+    Map.get(@class_passives, class, [])
+  end
 end

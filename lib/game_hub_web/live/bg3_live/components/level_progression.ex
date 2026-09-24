@@ -81,8 +81,8 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
           id={"level-#{entry.level}"}
           class="rounded-xl border border-zinc-700 bg-zinc-950/60 p-4"
         >
-          <div class="grid gap-3 sm:grid-cols-[auto_1fr_1fr_auto] sm:items-end">
-            <div class="flex h-10 w-14 items-center justify-center rounded-lg bg-zinc-900 text-lg font-bold text-white">
+          <div class="grid gap-3 sm:grid-cols-[auto_1fr_1fr_auto] sm:items-end ">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-sm font-bold text-white">
               {entry.level}
             </div>
 
@@ -134,12 +134,12 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
                 </option>
               </select>
             </div>
+          </div>
 
-            <div class="text-sm text-zinc-400">
-              <span :if={entry.class_level}>
-                Niveau <strong class="text-white">{entry.class_level}</strong> en {entry.class}
-              </span>
-            </div>
+          <div :if={entry.class_level} class="mt-3 pt-3 text-sm text-zinc-400">
+            <span>
+              Niveau <strong class="text-white">{entry.class_level}</strong> en {entry.class}
+            </span>
           </div>
 
           <div :if={entry.feat_slot?} class="mt-3 border-t border-zinc-800 pt-3">
@@ -155,6 +155,54 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
               placeholder="Ex: Combattant expérimenté, Athlète, Résilient..."
               class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-amber-400 focus:outline-none"
             />
+          </div>
+
+          <div
+            :if={entry.passive_slot?}
+            class="mt-4 border-t border-zinc-800 pt-4"
+          >
+            <div class="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-amber-400">
+                  Passifs de classe
+                </p>
+
+                <p class="mt-1 text-xs text-zinc-500">
+                  Choisissez 2 passifs pour le niveau {entry.class_level} de {entry.class}.
+                </p>
+              </div>
+
+              <span class="text-xs text-zinc-400">
+                {length(entry.passives || [])} / 2
+              </span>
+            </div>
+
+            <div class="grid gap-2 sm:grid-cols-2">
+              <label
+                :for={passive <- Reference.passives_for(entry.class)}
+                class={[
+                  "flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition",
+                  if(
+                    passive in (entry.passives || []),
+                    do: "border-amber-400/70 bg-amber-500/10",
+                    else: "border-zinc-700 hover:border-zinc-500"
+                  )
+                ]}
+              >
+                <input
+                  type="checkbox"
+                  checked={passive in (entry.passives || [])}
+                  phx-click="toggle_level_passive"
+                  phx-value-level={entry.level}
+                  phx-value-passive={passive}
+                  class="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-amber-500 focus:ring-amber-500"
+                />
+
+                <span class="text-sm text-zinc-200">
+                  {passive}
+                </span>
+              </label>
+            </div>
           </div>
         </div>
       </div>

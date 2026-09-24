@@ -14,8 +14,14 @@ defmodule GameHub.Bg3.Leveling do
   un don peut être choisi.
   """
 
+  alias GameHub.Bg3.Reference
+
   @max_level 12
   @feat_interval 4
+
+  @passive_start_level 2
+  @passive_interval 4
+  @passives_per_slot 2
 
   def max_level, do: @max_level
   def feat_interval, do: @feat_interval
@@ -43,7 +49,9 @@ defmodule GameHub.Bg3.Leveling do
             computed_entry =
               Map.merge(entry, %{
                 class_level: nil,
-                feat_slot?: false
+                feat_slot?: false,
+                passive_slot?: false,
+                passives: Map.get(entry, :passives, [])
               })
 
             {counts, [computed_entry | acc]}
@@ -55,7 +63,9 @@ defmodule GameHub.Bg3.Leveling do
             computed_entry =
               Map.merge(entry, %{
                 class_level: class_level,
-                feat_slot?: rem(class_level, @feat_interval) == 0
+                feat_slot?: rem(class_level, @feat_interval) == 0,
+                passive_slot?: passive_slot?(class_level),
+                passives: Map.get(entry, :passives, [])
               })
 
             {counts, [computed_entry | acc]}
@@ -110,12 +120,12 @@ defmodule GameHub.Bg3.Leveling do
 
     Enum.map(levels, fn
       %{level: ^level_number} = entry ->
-        %{
-          entry
-          | class: class,
-            subclass: locked_subclass,
-            feat: nil
-        }
+        Map.merge(entry, %{
+          class: class,
+          subclass: locked_subclass,
+          feat: nil,
+          passives: []
+        })
 
       entry ->
         entry
@@ -128,10 +138,24 @@ defmodule GameHub.Bg3.Leveling do
   verrouillée par un autre niveau).
   """
   def put_subclass(levels, level_number, subclass) do
-    Enum.map(levels, fn
-      %{level: ^level_number} = entry -> %{entry | subclass: subclass}
-      entry -> entry
-    end)
+    selected_level = Enum.find(levels, &(&1.level == level_number))
+
+    case selected_level do
+      %{class: nil} ->
+        levels
+
+      %{class: class} ->
+        Enum.map(levels, fn entry ->
+          if entry.class == class do
+            Map.merge(entry, %{subclass: subclass})
+          else
+            entry
+          end
+        end)
+
+      nil ->
+        levels
+    end
   end
 
   @doc """
@@ -139,9 +163,51 @@ defmodule GameHub.Bg3.Leveling do
   """
   def put_feat(levels, level_number, feat) do
     Enum.map(levels, fn
-      %{level: ^level_number} = entry -> %{entry | feat: feat}
+      %{level: ^level_number} = entry -> Map.merge(entry, %{feat: feat})
       entry -> entry
     end)
+  end
+
+  def toggle_passive(levels, level_number, passive) do
+    computed_levels = compute(levels)
+
+    case Enum.find(computed_levels, &(&1.level == level_number)) do
+      %{class: nil} ->
+        levels
+
+      %{passive_slot?: false} ->
+        levels
+
+      %{class: class, passives: selected_passives} ->
+        available_passives = Reference.passives_for(class)
+        selected_passives = selected_passives || []
+
+        if passive not in available_passives do
+          levels
+        else
+          next_passives =
+            if passive in selected_passives do
+              List.delete(selected_passives, passive)
+            else
+              if length(selected_passives) < @passives_per_slot do
+                selected_passives ++ [passive]
+              else
+                selected_passives
+              end
+            end
+
+          Enum.map(levels, fn
+            %{level: ^level_number} = entry ->
+              Map.merge(entry, %{passives: next_passives})
+
+            entry ->
+              entry
+          end)
+        end
+
+      _ ->
+        levels
+    end
   end
 
   def new_level_from_previous(level_number, previous_level) do
@@ -149,7 +215,8 @@ defmodule GameHub.Bg3.Leveling do
       level: level_number,
       class: previous_level.class,
       subclass: previous_level.subclass,
-      feat: nil
+      feat: nil,
+      passives: []
     }
   end
 
@@ -168,4 +235,15 @@ defmodule GameHub.Bg3.Leveling do
   end
 
   defp present?(_value), do: false
+
+  def passive_start_level, do: @passive_start_level
+  def passive_interval, do: @passive_interval
+  def passives_per_slot, do: @passives_per_slot
+
+  def passive_slot?(class_level)
+      when is_integer(class_level) and class_level >= @passive_start_level do
+    rem(class_level - @passive_start_level, @passive_interval) == 0
+  end
+
+  def passive_slot?(_class_level), do: false
 end

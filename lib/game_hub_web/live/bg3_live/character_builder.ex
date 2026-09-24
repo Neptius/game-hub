@@ -282,17 +282,22 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
     {:noreply, recompute_progression(socket, levels)}
   end
 
-  defp extract_single_entry(params) do
-    params
-    |> Map.to_list()
-    |> List.first()
-  end
+  @impl true
+  def handle_event(
+        "toggle_level_passive",
+        %{"level" => level, "passive" => passive},
+        socket
+      ) do
+    level_number = String.to_integer(level)
 
-  defp recompute_progression(socket, levels) do
-    socket
-    |> assign(:levels, levels)
-    |> assign(:progression, Leveling.compute(levels))
-    |> assign(:progression_errors, Leveling.validate(levels))
+    levels =
+      Leveling.toggle_passive(
+        socket.assigns.levels,
+        level_number,
+        passive
+      )
+
+    {:noreply, recompute_progression(socket, levels)}
   end
 
   @impl true
@@ -427,6 +432,19 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
       </div>
     </Layouts.app>
     """
+  end
+
+  defp extract_single_entry(params) do
+    params
+    |> Map.to_list()
+    |> List.first()
+  end
+
+  defp recompute_progression(socket, levels) do
+    socket
+    |> assign(:levels, levels)
+    |> assign(:progression, Leveling.compute(levels))
+    |> assign(:progression_errors, Leveling.validate(levels))
   end
 
   defp form_value(form, key) do
