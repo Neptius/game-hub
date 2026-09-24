@@ -50,11 +50,20 @@ defmodule GameHubWeb.Bg3Live.Components.CharacterSummary do
 
         <ul class="space-y-1">
           <li
-            :for={{class, level} <- @class_levels}
+            :for={summary <- @class_levels}
             class="flex items-center justify-between rounded-lg bg-zinc-950/40 px-3 py-1.5 text-sm"
           >
-            <span class="text-zinc-300">{class}</span>
-            <span class="font-semibold text-white">{level}</span>
+            <span class="text-zinc-300">
+              {summary.class}
+
+              <span :if={summary.subclass} class="text-zinc-400">
+                ({summary.subclass})
+              </span>
+            </span>
+
+            <span class="font-semibold text-white">
+              {summary.level}
+            </span>
           </li>
         </ul>
       </div>
@@ -79,10 +88,28 @@ defmodule GameHubWeb.Bg3Live.Components.CharacterSummary do
   defp class_level_counts(progression) do
     progression
     |> Enum.filter(& &1.class)
-    |> Enum.reduce(%{}, fn entry, acc ->
-      Map.update(acc, entry.class, 1, &(&1 + 1))
+    |> Enum.reduce(%{}, fn %{class: class, subclass: subclass}, acc ->
+      current =
+        Map.get(acc, class, %{
+          level: 0,
+          subclass: nil
+        })
+
+      updated = %{
+        level: current.level + 1,
+        subclass: current.subclass || subclass
+      }
+
+      Map.put(acc, class, updated)
     end)
-    |> Enum.sort_by(fn {_class, level} -> -level end)
+    |> Enum.map(fn {class, summary} ->
+      %{
+        class: class,
+        level: summary.level,
+        subclass: summary.subclass
+      }
+    end)
+    |> Enum.sort_by(& &1.level, :desc)
   end
 
   defp compute_hp(0, _constitution), do: 0
