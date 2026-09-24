@@ -169,7 +169,7 @@ defmodule GameHub.Bg3.Reference do
   def subraces_for(race), do: Map.get(@subraces, race, [])
   def subclasses_for(class), do: Map.get(@subclasses, class, [])
 
-  def passives_for(class) do
+  def class_passives_for(class) do
     Map.get(@class_passives, class, [])
   end
 end

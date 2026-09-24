@@ -284,17 +284,17 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
 
   @impl true
   def handle_event(
-        "toggle_level_passive",
-        %{"level" => level, "passive" => passive},
+        "toggle_level_class_passive",
+        %{"level" => level, "class_passive" => class_passive},
         socket
       ) do
     level_number = String.to_integer(level)
 
     levels =
-      Leveling.toggle_passive(
+      Leveling.toggle_class_passive(
         socket.assigns.levels,
         level_number,
-        passive
+        class_passive
       )
 
     {:noreply, recompute_progression(socket, levels)}

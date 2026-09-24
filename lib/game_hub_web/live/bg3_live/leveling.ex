@@ -19,9 +19,9 @@ defmodule GameHub.Bg3.Leveling do
   @max_level 12
   @feat_interval 4
 
-  @passive_start_level 2
-  @passive_interval 4
-  @passives_per_slot 2
+  @class_passive_start_level 2
+  @class_passive_interval 4
+  @class_passives_per_slot 2
 
   def max_level, do: @max_level
   def feat_interval, do: @feat_interval
@@ -30,7 +30,7 @@ defmodule GameHub.Bg3.Leveling do
   Crée une entrée de niveau vide pour le niveau global donné.
   """
   def new_level(level) do
-    %{level: level, class: nil, subclass: nil, feat: nil}
+    %{level: level, class: nil, subclass: nil, feat: nil, class_passives: []}
   end
 
   @doc """
@@ -50,22 +50,22 @@ defmodule GameHub.Bg3.Leveling do
               Map.merge(entry, %{
                 class_level: nil,
                 feat_slot?: false,
-                passive_slot?: false,
-                passives: Map.get(entry, :passives, [])
+                class_passive_slot?: false,
+                class_passives: Map.get(entry, :class_passives, [])
               })
 
             {counts, [computed_entry | acc]}
 
-          class ->
-            class_level = Map.get(counts, class, 0) + 1
-            counts = Map.put(counts, class, class_level)
+          class_name ->
+            class_level = Map.get(counts, class_name, 0) + 1
+            counts = Map.put(counts, class_name, class_level)
 
             computed_entry =
               Map.merge(entry, %{
                 class_level: class_level,
                 feat_slot?: rem(class_level, @feat_interval) == 0,
-                passive_slot?: passive_slot?(class_level),
-                passives: Map.get(entry, :passives, [])
+                class_passive_slot?: class_passive_slot?(class_level),
+                class_passives: Map.get(entry, :class_passives, [])
               })
 
             {counts, [computed_entry | acc]}
@@ -124,7 +124,7 @@ defmodule GameHub.Bg3.Leveling do
           class: class,
           subclass: locked_subclass,
           feat: nil,
-          passives: []
+          class_passives: []
         })
 
       entry ->
@@ -168,46 +168,73 @@ defmodule GameHub.Bg3.Leveling do
     end)
   end
 
-  def toggle_passive(levels, level_number, passive) do
+  def toggle_class_passive(levels, level_number, class_passive) do
     computed_levels = compute(levels)
 
     case Enum.find(computed_levels, &(&1.level == level_number)) do
       %{class: nil} ->
         levels
 
-      %{passive_slot?: false} ->
+      %{class_passive_slot?: false} ->
         levels
 
-      %{class: class, passives: selected_passives} ->
-        available_passives = Reference.passives_for(class)
-        selected_passives = selected_passives || []
+      %{class: class_name, class_passives: selected_class_passives} ->
+        available_class_passives =
+          Reference.class_passives_for(class_name)
 
-        if passive not in available_passives do
-          levels
-        else
-          next_passives =
-            if passive in selected_passives do
-              List.delete(selected_passives, passive)
-            else
-              if length(selected_passives) < @passives_per_slot do
-                selected_passives ++ [passive]
-              else
-                selected_passives
-              end
-            end
+        selected_class_passives = selected_class_passives || []
 
-          Enum.map(levels, fn
-            %{level: ^level_number} = entry ->
-              Map.merge(entry, %{passives: next_passives})
-
-            entry ->
-              entry
+        class_passives_taken_elsewhere =
+          computed_levels
+          |> Enum.filter(fn entry ->
+            entry.class == class_name and entry.level != level_number
           end)
+          |> Enum.flat_map(&Map.get(&1, :class_passives, []))
+
+        cond do
+          class_passive not in available_class_passives ->
+            levels
+
+          class_passive in selected_class_passives ->
+            next_class_passives =
+              List.delete(selected_class_passives, class_passive)
+
+            apply_class_passives(
+              levels,
+              level_number,
+              next_class_passives
+            )
+
+          class_passive in class_passives_taken_elsewhere ->
+            levels
+
+          length(selected_class_passives) >= @class_passives_per_slot ->
+            levels
+
+          true ->
+            next_class_passives =
+              selected_class_passives ++ [class_passive]
+
+            apply_class_passives(
+              levels,
+              level_number,
+              next_class_passives
+            )
         end
 
       _ ->
         levels
     end
+  end
+
+  defp apply_class_passives(levels, level_number, class_passives) do
+    Enum.map(levels, fn
+      %{level: ^level_number} = entry ->
+        Map.merge(entry, %{class_passives: class_passives})
+
+      entry ->
+        entry
+    end)
   end
 
   def new_level_from_previous(level_number, previous_level) do
@@ -216,7 +243,7 @@ defmodule GameHub.Bg3.Leveling do
       class: previous_level.class,
       subclass: previous_level.subclass,
       feat: nil,
-      passives: []
+      class_passives: []
     }
   end
 
@@ -236,14 +263,14 @@ defmodule GameHub.Bg3.Leveling do
 
   defp present?(_value), do: false
 
-  def passive_start_level, do: @passive_start_level
-  def passive_interval, do: @passive_interval
-  def passives_per_slot, do: @passives_per_slot
+  def class_passive_start_level, do: @class_passive_start_level
+  def class_passive_interval, do: @class_passive_interval
+  def class_passives_per_slot, do: @class_passives_per_slot
 
-  def passive_slot?(class_level)
-      when is_integer(class_level) and class_level >= @passive_start_level do
-    rem(class_level - @passive_start_level, @passive_interval) == 0
+  def class_passive_slot?(class_level)
+      when is_integer(class_level) and class_level >= @class_passive_start_level do
+    rem(class_level - @class_passive_start_level, @class_passive_interval) == 0
   end
 
-  def passive_slot?(_class_level), do: false
+  def class_passive_slot?(_class_level), do: false
 end

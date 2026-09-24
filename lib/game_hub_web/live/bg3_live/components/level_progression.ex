@@ -29,6 +29,12 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
       Leveling.ready_for_next_level?(levels)
   end
 
+  defp class_passives_taken_elsewhere(progression, entry) do
+    progression
+    |> Enum.filter(&(&1.class == entry.class and &1.level != entry.level))
+    |> Enum.flat_map(&(&1.class_passives || []))
+  end
+
   attr :levels, :list, required: true
   attr :progression, :list, required: true
   attr :progression_errors, :list, required: true
@@ -158,7 +164,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
           </div>
 
           <div
-            :if={entry.passive_slot?}
+            :if={entry.class_passive_slot?}
             class="mt-4 border-t border-zinc-800 pt-4"
           >
             <div class="mb-3 flex items-center justify-between gap-3">
@@ -173,33 +179,37 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
               </div>
 
               <span class="text-xs text-zinc-400">
-                {length(entry.passives || [])} / 2
+                {length(entry.class_passives || [])} / {Leveling.class_passives_per_slot()}
               </span>
             </div>
 
             <div class="grid gap-2 sm:grid-cols-2">
               <label
-                :for={passive <- Reference.passives_for(entry.class)}
+                :for={class_passive <- Reference.class_passives_for(entry.class)}
                 class={[
-                  "flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition",
-                  if(
-                    passive in (entry.passives || []),
-                    do: "border-amber-400/70 bg-amber-500/10",
-                    else: "border-zinc-700 hover:border-zinc-500"
-                  )
+                  "flex items-center gap-3 rounded-lg border px-3 py-2 transition",
+                  class_passive in (entry.class_passives || []) &&
+                    "cursor-pointer border-amber-400/70 bg-amber-500/10",
+                  class_passive not in (entry.class_passives || []) &&
+                    "cursor-pointer border-zinc-700 hover:border-zinc-500"
                 ]}
               >
                 <input
                   type="checkbox"
-                  checked={passive in (entry.passives || [])}
-                  phx-click="toggle_level_passive"
+                  checked={class_passive in (entry.class_passives || [])}
+                  phx-click="toggle_level_class_passive"
                   phx-value-level={entry.level}
-                  phx-value-passive={passive}
-                  class="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-amber-500 focus:ring-amber-500"
+                  phx-value-class_passive={class_passive}
+                  disabled={
+                    class_passive in class_passives_taken_elsewhere(@progression, entry) or
+                      (length(entry.class_passives || []) >= Leveling.class_passives_per_slot() and
+                         class_passive not in (entry.class_passives || []))
+                  }
+                  class="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-amber-500 focus:ring-amber-500 disabled:cursor-not-allowed disabled:opacity-40"
                 />
 
                 <span class="text-sm text-zinc-200">
-                  {passive}
+                  {class_passive}
                 </span>
               </label>
             </div>
