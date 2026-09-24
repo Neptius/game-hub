@@ -97,20 +97,30 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
   @impl true
   def mount(%{"id" => id}, _session, socket) do
     character = Bg3.get_character!(id)
-    base_scores = init_base_scores(character)
+
+    bonus_primary = stored_bonus_to_atom(character.bonus_primary)
+    bonus_secondary = stored_bonus_to_atom(character.bonus_secondary)
+
+    base_scores =
+      init_base_scores(
+        character,
+        bonus_primary,
+        bonus_secondary
+      )
 
     {:ok,
      socket
      |> assign(:page_title, "Modifier le personnage")
      |> assign(:character, character)
      |> assign(:base_scores, base_scores)
-     |> assign(:bonus_primary, nil)
-     |> assign(:bonus_secondary, nil)
+     |> assign(:bonus_primary, bonus_primary)
+     |> assign(:bonus_secondary, bonus_secondary)
      |> assign(:remaining_points, remaining_points(base_scores))
      |> assign(:stat_fields, @stat_fields)
      |> recompute_form()}
   end
 
+  @impl true
   def mount(_params, _session, socket) do
     base_scores = Map.new(@stat_fields, &{&1, @min_stat})
 
@@ -147,21 +157,35 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
     {:noreply, assign(socket, :form, to_form(changeset, as: :character))}
   end
 
+  @impl true
   def handle_event("save", %{"character" => params}, socket) do
-    merged = Map.merge(params, final_scores_params(socket.assigns))
+    merged_params =
+      Map.merge(params, final_scores_params(socket.assigns))
 
     result =
       case socket.assigns.character do
-        %Character{id: nil} -> Bg3.create_character(merged)
-        character -> Bg3.update_character(character, merged)
+        %Character{id: nil} ->
+          Bg3.create_character(merged_params)
+
+        character ->
+          Bg3.update_character(character, merged_params)
       end
 
     case result do
-      {:ok, saved} ->
-        {:noreply, push_navigate(socket, to: ~p"/baldurs-gate-3/characters/#{saved.id}")}
+      {:ok, saved_character} ->
+        {:noreply,
+         push_navigate(
+           socket,
+           to: ~p"/baldurs-gate-3/characters/#{saved_character.id}"
+         )}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :form, to_form(changeset, as: :character))}
+        {:noreply,
+         assign(
+           socket,
+           :form,
+           to_form(changeset, as: :character, action: :validate)
+         )}
     end
   end
 
@@ -216,43 +240,50 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
   end
 
   @impl true
-  def handle_event("toggle_bonus", %{"bonus" => bonus, "stat" => stat}, socket) do
-    stat = String.to_existing_atom(stat)
+  def handle_event("toggle_bonus", %{"bonus" => bonus, "stat" => stat_name}, socket) do
+    case stat_from_param(stat_name) do
+      nil ->
+        {:noreply, socket}
 
-    {bonus_primary, bonus_secondary} =
-      case bonus do
-        "primary" ->
-          if socket.assigns.bonus_primary == stat do
-            {nil, socket.assigns.bonus_secondary}
-          else
-            secondary =
-              if socket.assigns.bonus_secondary == stat do
-                nil
+      stat ->
+        {bonus_primary, bonus_secondary} =
+          case bonus do
+            "primary" ->
+              if socket.assigns.bonus_primary == stat do
+                {nil, socket.assigns.bonus_secondary}
               else
-                socket.assigns.bonus_secondary
+                secondary =
+                  if socket.assigns.bonus_secondary == stat do
+                    nil
+                  else
+                    socket.assigns.bonus_secondary
+                  end
+
+                {stat, secondary}
               end
 
-            {stat, secondary}
+            "secondary" ->
+              cond do
+                socket.assigns.bonus_secondary == stat ->
+                  {socket.assigns.bonus_primary, nil}
+
+                socket.assigns.bonus_primary == stat ->
+                  {socket.assigns.bonus_primary, nil}
+
+                true ->
+                  {socket.assigns.bonus_primary, stat}
+              end
+
+            _ ->
+              {socket.assigns.bonus_primary, socket.assigns.bonus_secondary}
           end
 
-        "secondary" ->
-          cond do
-            socket.assigns.bonus_secondary == stat ->
-              {socket.assigns.bonus_primary, nil}
-
-            socket.assigns.bonus_primary == stat ->
-              {socket.assigns.bonus_primary, nil}
-
-            true ->
-              {socket.assigns.bonus_primary, stat}
-          end
-      end
-
-    {:noreply,
-     socket
-     |> assign(:bonus_primary, bonus_primary)
-     |> assign(:bonus_secondary, bonus_secondary)
-     |> recompute_form()}
+        {:noreply,
+         socket
+         |> assign(:bonus_primary, bonus_primary)
+         |> assign(:bonus_secondary, bonus_secondary)
+         |> recompute_form()}
+    end
   end
 
   @impl true
@@ -531,11 +562,28 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
     |> Map.get(to_string(key), "")
   end
 
-  defp init_base_scores(%Character{} = character) do
+  defp init_base_scores(
+         %Character{} = character,
+         bonus_primary,
+         bonus_secondary
+       ) do
     Map.new(@stat_fields, fn field ->
-      value = Map.get(character, field) || @min_stat
-      clamped = value |> max(@min_stat) |> min(@max_stat)
-      {field, clamped}
+      stored_value = Map.get(character, field) || @min_stat
+
+      bonus =
+        cond do
+          bonus_primary == field -> 3
+          bonus_secondary == field -> 1
+          true -> 0
+        end
+
+      base_value =
+        stored_value
+        |> Kernel.-(bonus)
+        |> max(@min_stat)
+        |> min(@max_stat)
+
+      {field, base_value}
     end)
   end
 
@@ -562,22 +610,28 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
     base + bonus
   end
 
-  defp final_scores_params(assigns) do
-    Map.new(@stat_fields, fn stat ->
-      {Atom.to_string(stat), Integer.to_string(final_score(assigns, stat))}
-    end)
-  end
-
   defp recompute_form(socket) do
-    existing_params = socket.assigns[:form] && socket.assigns.form.params
+    existing_params =
+      case socket.assigns[:form] do
+        nil -> %{}
+        form -> form.params || %{}
+      end
 
     params =
-      (existing_params || %{})
+      existing_params
       |> Map.merge(final_scores_params(socket.assigns))
 
-    changeset = Bg3.change_character(socket.assigns.character, params)
+    changeset =
+      Bg3.change_character(
+        socket.assigns.character,
+        params
+      )
 
-    assign(socket, :form, to_form(changeset, as: :character))
+    assign(
+      socket,
+      :form,
+      to_form(changeset, as: :character)
+    )
   end
 
   defp stat_label(:strength), do: "Force"
@@ -593,4 +647,48 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
       :down -> Map.fetch!(@cost_table, current) - Map.fetch!(@cost_table, current - 1)
     end
   end
+
+  defp stored_bonus_to_atom(nil), do: nil
+
+  defp stored_bonus_to_atom(value) when is_binary(value) do
+    case value do
+      "strength" -> :strength
+      "dexterity" -> :dexterity
+      "constitution" -> :constitution
+      "intelligence" -> :intelligence
+      "wisdom" -> :wisdom
+      "charisma" -> :charisma
+      _ -> nil
+    end
+  end
+
+  defp stored_bonus_to_atom(value) when is_atom(value), do: value
+  defp stored_bonus_to_atom(_value), do: nil
+
+  defp final_scores_params(assigns) do
+    scores =
+      Map.new(@stat_fields, fn stat ->
+        {
+          Atom.to_string(stat),
+          Integer.to_string(final_score(assigns, stat))
+        }
+      end)
+
+    Map.merge(scores, %{
+      "bonus_primary" => bonus_to_param(assigns.bonus_primary),
+      "bonus_secondary" => bonus_to_param(assigns.bonus_secondary)
+    })
+  end
+
+  defp bonus_to_param(nil), do: nil
+  defp bonus_to_param(stat) when is_atom(stat), do: Atom.to_string(stat)
+  defp bonus_to_param(stat) when is_binary(stat), do: stat
+
+  defp stat_from_param("strength"), do: :strength
+  defp stat_from_param("dexterity"), do: :dexterity
+  defp stat_from_param("constitution"), do: :constitution
+  defp stat_from_param("intelligence"), do: :intelligence
+  defp stat_from_param("wisdom"), do: :wisdom
+  defp stat_from_param("charisma"), do: :charisma
+  defp stat_from_param(_), do: nil
 end

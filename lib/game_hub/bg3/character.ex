@@ -20,6 +20,8 @@ defmodule GameHub.Bg3.Character do
     field :wisdom, :integer, default: 10
     field :charisma, :integer, default: 8
     field :notes, :string
+    field :bonus_primary, :string
+    field :bonus_secondary, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -41,7 +43,9 @@ defmodule GameHub.Bg3.Character do
       :intelligence,
       :wisdom,
       :charisma,
-      :notes
+      :notes,
+      :bonus_primary,
+      :bonus_secondary
     ])
     |> validate_required([
       :name,
@@ -70,6 +74,7 @@ defmodule GameHub.Bg3.Character do
     |> validate_number(:intelligence, greater_than_or_equal_to: 3, less_than_or_equal_to: 20)
     |> validate_number(:wisdom, greater_than_or_equal_to: 3, less_than_or_equal_to: 20)
     |> validate_number(:charisma, greater_than_or_equal_to: 3, less_than_or_equal_to: 20)
+    |> validate_bonus_choices()
   end
 
   defp supported_races do
@@ -133,5 +138,34 @@ defmodule GameHub.Bg3.Character do
       "Neutral Evil",
       "Chaotic Evil"
     ]
+  end
+
+  defp validate_bonus_choices(changeset) do
+    primary = get_field(changeset, :bonus_primary)
+    secondary = get_field(changeset, :bonus_secondary)
+
+    changeset =
+      if is_nil(primary) or primary in @stat_names do
+        changeset
+      else
+        add_error(changeset, :bonus_primary, "est invalide")
+      end
+
+    changeset =
+      if is_nil(secondary) or secondary in @stat_names do
+        changeset
+      else
+        add_error(changeset, :bonus_secondary, "est invalide")
+      end
+
+    if not is_nil(primary) and primary == secondary do
+      add_error(
+        changeset,
+        :bonus_secondary,
+        "doit être différent de la caractéristique recevant +3"
+      )
+    else
+      changeset
+    end
   end
 end
