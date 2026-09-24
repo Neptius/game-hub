@@ -1,39 +1,8 @@
 defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
-  @moduledoc """
-  Composant d'affichage de la progression multiclasse par niveau.
-  Extrait de `CharacterBuilder` pour garder ce dernier lisible.
-  """
-
   use Phoenix.Component
 
-  alias GameHub.Bg3.Reference
   alias GameHub.Bg3.Leveling
-
-  defp subclass_disabled?(entry, progression) do
-    case entry.class do
-      nil ->
-        true
-
-      class ->
-        class_occurrences =
-          Enum.count(progression, fn level ->
-            level.class == class
-          end)
-
-        class_occurrences >= 2
-    end
-  end
-
-  defp can_add_level?(levels, max_level) do
-    length(levels) < max_level and
-      Leveling.ready_for_next_level?(levels)
-  end
-
-  defp class_passives_taken_elsewhere(progression, entry) do
-    progression
-    |> Enum.filter(&(&1.class == entry.class and &1.level != entry.level))
-    |> Enum.flat_map(&(&1.class_passives || []))
-  end
+  alias GameHub.Bg3.Reference
 
   attr :levels, :list, required: true
   attr :progression, :list, required: true
@@ -72,6 +41,13 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
         </div>
       </div>
 
+      <p
+        :if={!can_add_level?(@levels, @max_level)}
+        class="mb-4 text-right text-xs text-zinc-500"
+      >
+        Sélectionnez une classe et une sous-classe pour le dernier niveau.
+      </p>
+
       <div
         :if={@progression_errors != []}
         class="mb-4 space-y-1 rounded-lg border border-red-500/40 bg-red-500/10 p-3"
@@ -87,8 +63,8 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
           id={"level-#{entry.level}"}
           class="rounded-xl border border-zinc-700 bg-zinc-950/60 p-4"
         >
-          <div class="grid gap-3 sm:grid-cols-[auto_1fr_1fr_auto] sm:items-end ">
-            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-sm font-bold text-white">
+          <div class="grid gap-3 sm:grid-cols-[auto_1fr_1fr_auto] sm:items-end">
+            <div class="flex h-10 w-14 items-center justify-center rounded-lg bg-zinc-900 text-lg font-bold text-white">
               {entry.level}
             </div>
 
@@ -102,13 +78,13 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
                 phx-change="set_level_class"
                 class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-amber-400 focus:outline-none"
               >
-                <option value="" selected={is_nil(entry.class)}>— Choisir —</option>
+                <option value="" selected={is_nil(entry.class_id)}>— Choisir —</option>
                 <option
                   :for={class <- Reference.classes()}
-                  value={class}
-                  selected={entry.class == class}
+                  value={class.id}
+                  selected={entry.class_id == class.id}
                 >
-                  {class}
+                  {class.name}
                 </option>
               </select>
             </div>
@@ -127,30 +103,28 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
                   subclass_disabled?(entry, @progression) && "cursor-not-allowed opacity-50"
                 ]}
               >
-                <option value="" selected={is_nil(entry.subclass)}>
-                  — Choisir —
-                </option>
-
+                <option value="" selected={is_nil(entry.subclass_id)}>— Choisir —</option>
                 <option
-                  :for={subclass <- Reference.subclasses_for(entry.class)}
-                  value={subclass}
-                  selected={entry.subclass == subclass}
+                  :for={subclass <- Reference.subclasses_for(entry.class_id)}
+                  value={subclass.id}
+                  selected={entry.subclass_id == subclass.id}
                 >
-                  {subclass}
+                  {subclass.name}
                 </option>
               </select>
             </div>
-          </div>
 
-          <div :if={entry.class_level} class="mt-3 pt-3 text-sm text-zinc-400">
-            <span>
-              Niveau <strong class="text-white">{entry.class_level}</strong> en {entry.class}
-            </span>
+            <div class="text-sm text-zinc-400">
+              <span :if={entry.class_level}>
+                Niveau <strong class="text-white">{entry.class_level}</strong>
+                en {Reference.class_name(entry.class_id)}
+              </span>
+            </div>
           </div>
 
           <div :if={entry.feat_slot?} class="mt-3 border-t border-zinc-800 pt-3">
             <label class="mb-1 block text-xs uppercase tracking-wide text-amber-400">
-              🏅 Don (niveau {entry.class_level} en {entry.class})
+              🏅 Don (niveau {entry.class_level} en {Reference.class_name(entry.class_id)})
             </label>
 
             <input
@@ -163,10 +137,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
             />
           </div>
 
-          <div
-            :if={entry.class_passive_slot?}
-            class="mt-4 border-t border-zinc-800 pt-4"
-          >
+          <div :if={entry.class_passive_slot?} class="mt-4 border-t border-zinc-800 pt-4">
             <div class="mb-3 flex items-center justify-between gap-3">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-wide text-amber-400">
@@ -174,42 +145,43 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
                 </p>
 
                 <p class="mt-1 text-xs text-zinc-500">
-                  Choisissez 2 passifs pour le niveau {entry.class_level} de {entry.class}.
+                  Choisissez 2 passifs pour le niveau {entry.class_level} de {Reference.class_name(
+                    entry.class_id
+                  )}.
                 </p>
               </div>
 
               <span class="text-xs text-zinc-400">
-                {length(entry.class_passives || [])} / {Leveling.class_passives_per_slot()}
+                {length(entry.class_passive_ids || [])} / {Leveling.class_passives_per_slot()}
               </span>
             </div>
 
             <div class="grid gap-2 sm:grid-cols-2">
               <label
-                :for={class_passive <- Reference.class_passives_for(entry.class)}
+                :for={class_passive <- Reference.class_passives_for(entry.class_id)}
                 class={[
                   "flex items-center gap-3 rounded-lg border px-3 py-2 transition",
-                  class_passive in (entry.class_passives || []) &&
+                  class_passive.id in (entry.class_passive_ids || []) &&
                     "cursor-pointer border-amber-400/70 bg-amber-500/10",
-                  class_passive not in (entry.class_passives || []) &&
+                  class_passive.id not in (entry.class_passive_ids || []) &&
                     "cursor-pointer border-zinc-700 hover:border-zinc-500"
                 ]}
               >
                 <input
                   type="checkbox"
-                  checked={class_passive in (entry.class_passives || [])}
+                  checked={class_passive.id in (entry.class_passive_ids || [])}
                   phx-click="toggle_level_class_passive"
                   phx-value-level={entry.level}
-                  phx-value-class_passive={class_passive}
+                  phx-value-class_passive_id={class_passive.id}
                   disabled={
-                    class_passive in class_passives_taken_elsewhere(@progression, entry) or
-                      (length(entry.class_passives || []) >= Leveling.class_passives_per_slot() and
-                         class_passive not in (entry.class_passives || []))
+                    length(entry.class_passive_ids || []) >= Leveling.class_passives_per_slot() and
+                      class_passive.id not in (entry.class_passive_ids || [])
                   }
                   class="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-amber-500 focus:ring-amber-500 disabled:cursor-not-allowed disabled:opacity-40"
                 />
 
                 <span class="text-sm text-zinc-200">
-                  {class_passive}
+                  {class_passive.name}
                 </span>
               </label>
             </div>
@@ -218,5 +190,20 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
       </div>
     </div>
     """
+  end
+
+  defp can_add_level?(levels, max_level) do
+    length(levels) < max_level and Leveling.ready_for_next_level?(levels)
+  end
+
+  defp subclass_disabled?(entry, progression) do
+    case entry.class_id do
+      nil ->
+        true
+
+      class_id ->
+        occurrences = Enum.count(progression, &(&1.class_id == class_id))
+        occurrences >= 2
+    end
   end
 end

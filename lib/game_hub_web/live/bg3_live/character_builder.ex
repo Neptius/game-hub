@@ -74,8 +74,13 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
     {:noreply, assign(socket, :form, to_form(changeset, as: :character, action: :validate))}
   end
 
-  def handle_event("generate_name", %{"race" => race}, socket) do
-    generated_name = NameGenerator.generate(race)
+  def handle_event("generate_name", %{"race_id" => race_id_str}, socket) do
+    race_name =
+      race_id_str
+      |> String.to_integer()
+      |> Reference.race_name()
+
+    generated_name = NameGenerator.generate(race_name || "generic")
 
     params =
       (socket.assigns.form.params || %{})
@@ -216,23 +221,14 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
     end
   end
 
-  @impl true
   def handle_event("add_level", _params, socket) do
     levels = socket.assigns.levels
 
-    can_add_level =
-      length(levels) < Leveling.max_level() and
-        Leveling.ready_for_next_level?(levels)
-
     levels =
-      if can_add_level do
+      if length(levels) < Leveling.max_level() and Leveling.ready_for_next_level?(levels) do
         previous_level = List.last(levels)
         next_level_number = length(levels) + 1
-
-        levels ++
-          [
-            Leveling.new_level_from_previous(next_level_number, previous_level)
-          ]
+        levels ++ [Leveling.new_level_from_previous(next_level_number, previous_level)]
       else
         levels
       end
@@ -242,34 +238,25 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
 
   def handle_event("remove_level", _params, socket) do
     levels = socket.assigns.levels
-
-    levels =
-      if length(levels) > 1 do
-        List.delete_at(levels, -1)
-      else
-        levels
-      end
-
+    levels = if length(levels) > 1, do: List.delete_at(levels, -1), else: levels
     {:noreply, recompute_progression(socket, levels)}
   end
 
   def handle_event("set_level_class", %{"level_class" => level_class_params}, socket) do
-    {level_str, class} = extract_single_entry(level_class_params)
+    {level_str, class_id_str} = extract_single_entry(level_class_params)
     level_number = String.to_integer(level_str)
-    class = if class == "", do: nil, else: class
+    class_id = if class_id_str == "", do: nil, else: String.to_integer(class_id_str)
 
-    levels = Leveling.put_class(socket.assigns.levels, level_number, class)
-
+    levels = Leveling.put_class(socket.assigns.levels, level_number, class_id)
     {:noreply, recompute_progression(socket, levels)}
   end
 
   def handle_event("set_level_subclass", %{"level_subclass" => level_subclass_params}, socket) do
-    {level_str, subclass} = extract_single_entry(level_subclass_params)
+    {level_str, subclass_id_str} = extract_single_entry(level_subclass_params)
     level_number = String.to_integer(level_str)
-    subclass = if subclass == "", do: nil, else: subclass
+    subclass_id = if subclass_id_str == "", do: nil, else: String.to_integer(subclass_id_str)
 
-    levels = Leveling.put_subclass(socket.assigns.levels, level_number, subclass)
-
+    levels = Leveling.put_subclass(socket.assigns.levels, level_number, subclass_id)
     {:noreply, recompute_progression(socket, levels)}
   end
 
@@ -278,34 +265,38 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
     level_number = String.to_integer(level_str)
 
     levels = Leveling.put_feat(socket.assigns.levels, level_number, feat)
-
     {:noreply, recompute_progression(socket, levels)}
   end
 
-  @impl true
   def handle_event(
         "toggle_level_class_passive",
-        %{"level" => level, "class_passive" => class_passive},
+        %{"level" => level, "class_passive_id" => class_passive_id},
         socket
       ) do
     level_number = String.to_integer(level)
+    class_passive_id = String.to_integer(class_passive_id)
 
-    levels =
-      Leveling.toggle_class_passive(
-        socket.assigns.levels,
-        level_number,
-        class_passive
-      )
-
+    levels = Leveling.toggle_class_passive(socket.assigns.levels, level_number, class_passive_id)
     {:noreply, recompute_progression(socket, levels)}
+  end
+
+  defp extract_single_entry(params) do
+    params |> Map.to_list() |> List.first()
+  end
+
+  defp recompute_progression(socket, levels) do
+    socket
+    |> assign(:levels, levels)
+    |> assign(:progression, Leveling.compute(levels))
+    |> assign(:progression_errors, Leveling.validate(levels))
   end
 
   @impl true
   def render(assigns) do
     selected_race = form_value(assigns.form, :race)
     selected_class = form_value(assigns.form, :class)
-    subraces = Reference.subraces_for(selected_race)
-    subclasses = Reference.subclasses_for(selected_class)
+    subraces = Reference.subraces_for(selected_race) |> to_select_options()
+    subclasses = Reference.subclasses_for(selected_class) |> to_select_options()
 
     assigns =
       assigns
@@ -313,10 +304,10 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
       |> assign(:selected_class, selected_class)
       |> assign(:subraces, subraces)
       |> assign(:subclasses, subclasses)
-      |> assign(:race_options, Reference.races())
-      |> assign(:class_options, Reference.classes())
-      |> assign(:background_options, Reference.backgrounds())
-      |> assign(:alignment_options, Reference.alignments())
+      |> assign(:race_options, to_select_options(Reference.races()))
+      |> assign(:class_options, to_select_options(Reference.classes()))
+      |> assign(:background_options, to_select_options(Reference.backgrounds()))
+      |> assign(:alignment_options, to_select_options(Reference.alignments()))
       |> assign(:stat_fields, @stat_fields)
 
     ~H"""
@@ -432,19 +423,6 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
       </div>
     </Layouts.app>
     """
-  end
-
-  defp extract_single_entry(params) do
-    params
-    |> Map.to_list()
-    |> List.first()
-  end
-
-  defp recompute_progression(socket, levels) do
-    socket
-    |> assign(:levels, levels)
-    |> assign(:progression, Leveling.compute(levels))
-    |> assign(:progression_errors, Leveling.validate(levels))
   end
 
   defp form_value(form, key) do
@@ -567,4 +545,8 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
   defp stat_from_param("wisdom"), do: :wisdom
   defp stat_from_param("charisma"), do: :charisma
   defp stat_from_param(_), do: nil
+
+  defp to_select_options(entries) do
+    Enum.map(entries, &{&1.name, &1.id})
+  end
 end

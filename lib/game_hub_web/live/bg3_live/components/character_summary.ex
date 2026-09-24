@@ -6,6 +6,8 @@ defmodule GameHubWeb.Bg3Live.Components.CharacterSummary do
 
   use Phoenix.Component
 
+  alias GameHub.Bg3.Reference
+
   @base_hp 36
   @hp_per_level 6
 
@@ -87,26 +89,26 @@ defmodule GameHubWeb.Bg3Live.Components.CharacterSummary do
 
   defp class_level_counts(progression) do
     progression
-    |> Enum.filter(& &1.class)
-    |> Enum.reduce(%{}, fn %{class: class, subclass: subclass}, acc ->
+    |> Enum.filter(& &1.class_id)
+    |> Enum.reduce(%{}, fn %{class_id: class_id, subclass_id: subclass_id}, acc ->
       current =
-        Map.get(acc, class, %{
+        Map.get(acc, class_id, %{
           level: 0,
-          subclass: nil
+          subclass_id: nil
         })
 
       updated = %{
         level: current.level + 1,
-        subclass: current.subclass || subclass
+        subclass_id: current.subclass_id || subclass_id
       }
 
-      Map.put(acc, class, updated)
+      Map.put(acc, class_id, updated)
     end)
-    |> Enum.map(fn {class, summary} ->
+    |> Enum.map(fn {class_id, summary} ->
       %{
-        class: class,
+        class: Reference.class_name(class_id),
         level: summary.level,
-        subclass: summary.subclass
+        subclass: Reference.subclass_name(summary.subclass_id)
       }
     end)
     |> Enum.sort_by(& &1.level, :desc)
