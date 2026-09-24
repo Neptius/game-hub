@@ -77,7 +77,6 @@ defmodule GameHub.MixProject do
       {:oban, "~> 2.24"},
       {:igniter, "~> 0.5", only: [:dev]},
       {:nimble_lz4, "~> 1.2"},
-      {:ezstd, "~> 1.1"},
       {:sweet_xml, "~> 0.7.5"}
     ]
   end

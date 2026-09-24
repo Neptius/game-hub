@@ -163,9 +163,6 @@ defmodule GameHub.Bg3.Pak.Reader do
       :zlib ->
         decompress_zlib(data, expected_size)
 
-      :zstd ->
-        decompress_zstd(data, expected_size)
-
       :unknown ->
         {:error, {:unsupported_compression, flags}}
     end
@@ -206,27 +203,6 @@ defmodule GameHub.Bg3.Pak.Reader do
     rescue
       error ->
         {:error, {:zlib_error, error}}
-    end
-  end
-
-  defp decompress_zstd(data, expected_size) do
-    case :ezstd.decompress(data) do
-      {:ok, result} ->
-        if byte_size(result) == expected_size do
-          {:ok, result}
-        else
-          {:error, {:invalid_size, byte_size(result), expected_size}}
-        end
-
-      result when is_binary(result) ->
-        if byte_size(result) == expected_size do
-          {:ok, result}
-        else
-          {:error, {:invalid_size, byte_size(result), expected_size}}
-        end
-
-      {:error, reason} ->
-        {:error, {:zstd_error, reason}}
     end
   end
 end
