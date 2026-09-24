@@ -73,33 +73,75 @@ defmodule GameHubWeb.Bg3Live.Show do
             <h2 class="mb-4 text-xl font-semibold text-white">Caractéristiques</h2>
             <dl class="grid grid-cols-2 gap-4 text-sm text-zinc-300">
               <div class="rounded-xl bg-zinc-950/60 p-3">
-                <dt class="text-zinc-500">Force</dt><dd class="mt-1 text-lg text-white">
-                  {@character.strength}
+                <dt class="text-zinc-500">Force</dt>
+                <dd class="mt-1 flex items-baseline gap-2">
+                  <span class="text-lg font-semibold text-white">
+                    {@character.strength}
+                  </span>
+
+                  <span class="text-sm font-bold text-amber-400">
+                    {ability_modifier_label(@character.strength)}
+                  </span>
                 </dd>
               </div>
               <div class="rounded-xl bg-zinc-950/60 p-3">
-                <dt class="text-zinc-500">Dextérité</dt><dd class="mt-1 text-lg text-white">
-                  {@character.dexterity}
+                <dt class="text-zinc-500">Dextérité</dt>
+                <dd class="mt-1 flex items-baseline gap-2">
+                  <span class="text-lg font-semibold text-white">
+                    {@character.dexterity}
+                  </span>
+
+                  <span class="text-sm font-bold text-amber-400">
+                    {ability_modifier_label(@character.dexterity)}
+                  </span>
                 </dd>
               </div>
               <div class="rounded-xl bg-zinc-950/60 p-3">
-                <dt class="text-zinc-500">Constitution</dt><dd class="mt-1 text-lg text-white">
-                  {@character.constitution}
+                <dt class="text-zinc-500">Constitution</dt>
+                <dd class="mt-1 flex items-baseline gap-2">
+                  <span class="text-lg font-semibold text-white">
+                    {@character.constitution}
+                  </span>
+
+                  <span class="text-sm font-bold text-amber-400">
+                    {ability_modifier_label(@character.constitution)}
+                  </span>
                 </dd>
               </div>
               <div class="rounded-xl bg-zinc-950/60 p-3">
-                <dt class="text-zinc-500">Intelligence</dt><dd class="mt-1 text-lg text-white">
-                  {@character.intelligence}
+                <dt class="text-zinc-500">Intelligence</dt>
+                <dd class="mt-1 flex items-baseline gap-2">
+                  <span class="text-lg font-semibold text-white">
+                    {@character.intelligence}
+                  </span>
+
+                  <span class="text-sm font-bold text-amber-400">
+                    {ability_modifier_label(@character.intelligence)}
+                  </span>
                 </dd>
               </div>
               <div class="rounded-xl bg-zinc-950/60 p-3">
-                <dt class="text-zinc-500">Sagesse</dt><dd class="mt-1 text-lg text-white">
-                  {@character.wisdom}
+                <dt class="text-zinc-500">Sagesse</dt>
+                <dd class="mt-1 flex items-baseline gap-2">
+                  <span class="text-lg font-semibold text-white">
+                    {@character.wisdom}
+                  </span>
+
+                  <span class="text-sm font-bold text-amber-400">
+                    {ability_modifier_label(@character.wisdom)}
+                  </span>
                 </dd>
               </div>
               <div class="rounded-xl bg-zinc-950/60 p-3">
-                <dt class="text-zinc-500">Charisme</dt><dd class="mt-1 text-lg text-white">
-                  {@character.charisma}
+                <dt class="text-zinc-500">Charisme</dt>
+                <dd class="mt-1 flex items-baseline gap-2">
+                  <span class="text-lg font-semibold text-white">
+                    {@character.charisma}
+                  </span>
+
+                  <span class="text-sm font-bold text-amber-400">
+                    {ability_modifier_label(@character.charisma)}
+                  </span>
                 </dd>
               </div>
             </dl>
@@ -113,5 +155,19 @@ defmodule GameHubWeb.Bg3Live.Show do
       </div>
     </Layouts.app>
     """
+  end
+
+  defp ability_modifier(score) when is_integer(score) do
+    Integer.floor_div(score - 10, 2)
+  end
+
+  defp ability_modifier_label(score) do
+    modifier = ability_modifier(score)
+
+    if modifier >= 0 do
+      "+#{modifier}"
+    else
+      Integer.to_string(modifier)
+    end
   end
 end

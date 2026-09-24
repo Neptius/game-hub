@@ -451,13 +451,21 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
                       −
                     </button>
 
-                    <div class="flex min-w-12 flex-col items-center">
+                    <div class="flex min-w-16 flex-col items-center rounded-lg bg-zinc-900 px-3 py-2">
                       <span class="text-2xl font-bold text-white">
                         {final_score(assigns, stat)}
                       </span>
 
-                      <span class="text-[11px] uppercase tracking-wide text-zinc-500">
-                        total
+                      <span class="mt-1 text-xs uppercase tracking-wide text-zinc-500">
+                        Score
+                      </span>
+
+                      <span class="mt-1 text-sm font-bold text-amber-400">
+                        {ability_modifier_label(final_score(assigns, stat))}
+                      </span>
+
+                      <span class="text-[10px] uppercase tracking-wide text-zinc-500">
+                        Modificateur
                       </span>
                     </div>
 
@@ -691,4 +699,18 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
   defp stat_from_param("wisdom"), do: :wisdom
   defp stat_from_param("charisma"), do: :charisma
   defp stat_from_param(_), do: nil
+
+  defp ability_modifier(score) when is_integer(score) do
+    Integer.floor_div(score - 10, 2)
+  end
+
+  defp ability_modifier_label(score) do
+    modifier = ability_modifier(score)
+
+    if modifier >= 0 do
+      "+#{modifier}"
+    else
+      Integer.to_string(modifier)
+    end
+  end
 end
