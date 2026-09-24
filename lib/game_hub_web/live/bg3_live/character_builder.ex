@@ -3,6 +3,7 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
 
   alias GameHub.Bg3.{Leveling, Reference}
   import GameHubWeb.Bg3Live.Components.LevelProgression
+  import GameHubWeb.Bg3Live.Components.CharacterSummary
 
   alias GameHub.Bg3
   alias GameHub.Bg3.Character
@@ -314,12 +315,7 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
 
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto max-w-5xl px-4 py-8">
-        <div class="mb-6">
-          <p class="text-sm uppercase tracking-[0.2em] text-zinc-400">Baldur's Gate 3</p>
-          <h1 class="mt-2 text-3xl font-bold text-zinc-100">{@page_title}</h1>
-        </div>
-
+      <div class="grid gap-8 lg:grid-cols-[1fr_320px]">
         <.form
           for={@form}
           id="character-form"
@@ -374,13 +370,6 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
             </div>
           </div>
 
-          <.level_progression
-            levels={@levels}
-            progression={@progression}
-            progression_errors={@progression_errors}
-            max_level={Leveling.max_level()}
-          />
-
           <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6">
             <h2 class="mb-4 text-xl font-semibold text-white">Historique</h2>
             <div class="grid gap-5 md:grid-cols-2">
@@ -393,6 +382,13 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
               <.input field={@form[:notes]} type="textarea" label="Notes" rows={4} />
             </div>
           </div>
+
+          <.level_progression
+            levels={@levels}
+            progression={@progression}
+            progression_errors={@progression_errors}
+            max_level={Leveling.max_level()}
+          />
 
           <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6">
             <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -548,18 +544,27 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
           </div>
 
           <div class="flex justify-end gap-4">
-            <.link
-              navigate={~p"/baldurs-gate-3/characters"}
-              class="inline-flex items-center rounded-xl border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-200 transition hover:border-zinc-500"
-            >
-              Annuler
-            </.link>
+      <.link
+        navigate={~p"/baldurs-gate-3/characters"}
+        class="inline-flex items-center rounded-xl border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-200 transition hover:border-zinc-500"
+      >
+        Annuler
+      </.link>
 
-            <.button class="bg-amber-500 text-zinc-950 hover:bg-amber-400">
-              Enregistrer
-            </.button>
-          </div>
+      <.button type="submit" class="bg-amber-500 text-zinc-950 hover:bg-amber-400">
+        Enregistrer
+      </.button>
+    </div>
         </.form>
+
+        <aside class="lg:sticky lg:top-6 lg:self-start">
+          <.character_summary
+            progression={@progression}
+            base_scores={@base_scores}
+            bonus_primary={@bonus_primary}
+            bonus_secondary={@bonus_secondary}
+          />
+        </aside>
       </div>
     </Layouts.app>
     """
