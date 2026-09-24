@@ -1,90 +1,12 @@
 defmodule GameHubWeb.Bg3Live.CharacterBuilder do
   use GameHubWeb, :live_view
 
+  alias GameHub.Bg3.{Leveling, Reference}
+  import GameHubWeb.Bg3Live.Components.LevelProgression
+
   alias GameHub.Bg3
   alias GameHub.Bg3.Character
   alias GameHub.Bg3.NameGenerator
-
-  @race_options [
-    "Humain",
-    "Elfe",
-    "Semi-elfe",
-    "Nain",
-    "Halfelin",
-    "Gnome",
-    "Demi-orque",
-    "Tieffelin",
-    "Drow",
-    "Githyanki"
-  ]
-
-  @class_options [
-    "Barbare",
-    "Barde",
-    "Clerc",
-    "Druide",
-    "Guerrier",
-    "Moine",
-    "Paladin",
-    "Rôdeur",
-    "Roublard",
-    "Ensorceleur",
-    "Magicien",
-    "Occultiste"
-  ]
-
-  @background_options [
-    "Acolyte",
-    "Charlatan",
-    "Criminel",
-    "Héros du peuple",
-    "Noble",
-    "Sage",
-    "Soldat",
-    "Ermite",
-    "Artiste",
-    "Marin"
-  ]
-
-  @alignment_options [
-    "Loyal Bon",
-    "Neutre Bon",
-    "Chaotique Bon",
-    "Loyal Neutre",
-    "Neutre",
-    "Chaotique Neutre",
-    "Loyal Mauvais",
-    "Neutre Mauvais",
-    "Chaotique Mauvais"
-  ]
-
-  @subraces %{
-    "Humain" => ["Tradition humaine", "Héritier du Nord", "Marchand voyageur"],
-    "Elfe" => ["Haut-elfe", "Elfe des bois", "Elfe noir", "Drow"],
-    "Semi-elfe" => ["Semi-elfe de la cour", "Semi-elfe sauvage", "Semi-elfe nomade"],
-    "Nain" => ["Nain de la chaîne", "Nain des montagnes", "Nain des profondeurs"],
-    "Halfelin" => ["Halfelin léger", "Halfelin robuste", "Halfelin forestier"],
-    "Gnome" => ["Gnome forestier", "Gnome des roches", "Gnome tinker"],
-    "Demi-orque" => ["Demi-orque brutal", "Demi-orque farouche", "Demi-orque guerrier"],
-    "Tieffelin" => ["Tieffelin infernal", "Tieffelin abyssal", "Tieffelin démoniaque"],
-    "Drow" => ["Drow noble", "Drow guerrière", "Drow mystique"],
-    "Githyanki" => ["Githyanki de la lignée noble", "Githyanki guerrier", "Githyanki mystique"]
-  }
-
-  @subclasses %{
-    "Barbare" => ["Berserker", "Totem", "Path of the Ancestral Guardian"],
-    "Barde" => ["College of Lore", "College of Valor", "Glamour"],
-    "Clerc" => ["Vie", "Connaissance", "Guerre", "Nature"],
-    "Druide" => ["Cercle de la Terre", "Cercle du Feu", "Cercle de la Lune"],
-    "Guerrier" => ["Champion", "Battle Master", "Gilded Defense"],
-    "Moine" => ["Voie de la Main Ouverte", "Voie de la Tempête", "Voie de la Mère Terre"],
-    "Paladin" => ["Vengeance", "Ancien", "Dévotion"],
-    "Rôdeur" => ["Golem Hunter", "Hunt", "Beast Master"],
-    "Roublard" => ["Phantom", "Thief", "Assassin"],
-    "Ensorceleur" => ["Draconic Bloodline", "Wild Magic"],
-    "Magicien" => ["École d'Abjuration", "École d'Enchantment", "École d'Invocation"],
-    "Occultiste" => ["Le Pacte du Diable", "Le Pacte de la Faucheuse", "Le Pacte du Ciel"]
-  }
 
   @stat_fields [:strength, :dexterity, :constitution, :intelligence, :wisdom, :charisma]
   @min_stat 8
@@ -117,6 +39,9 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
      |> assign(:bonus_secondary, bonus_secondary)
      |> assign(:remaining_points, remaining_points(base_scores))
      |> assign(:stat_fields, @stat_fields)
+     |> assign(:levels, [Leveling.new_level(1)])
+     |> assign(:progression, Leveling.compute([Leveling.new_level(1)]))
+     |> assign(:progression_errors, [])
      |> recompute_form()}
   end
 
@@ -133,6 +58,9 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
      |> assign(:bonus_secondary, nil)
      |> assign(:remaining_points, @total_points)
      |> assign(:stat_fields, @stat_fields)
+     |> assign(:levels, [Leveling.new_level(1)])
+     |> assign(:progression, Leveling.compute([Leveling.new_level(1)]))
+     |> assign(:progression_errors, [])
      |> recompute_form()}
   end
 
@@ -287,11 +215,90 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
   end
 
   @impl true
+  def handle_event("add_level", _params, socket) do
+    levels = socket.assigns.levels
+
+    can_add_level =
+      length(levels) < Leveling.max_level() and
+        Leveling.ready_for_next_level?(levels)
+
+    levels =
+      if can_add_level do
+        previous_level = List.last(levels)
+        next_level_number = length(levels) + 1
+
+        levels ++
+          [
+            Leveling.new_level_from_previous(next_level_number, previous_level)
+          ]
+      else
+        levels
+      end
+
+    {:noreply, recompute_progression(socket, levels)}
+  end
+
+  def handle_event("remove_level", _params, socket) do
+    levels = socket.assigns.levels
+
+    levels =
+      if length(levels) > 1 do
+        List.delete_at(levels, -1)
+      else
+        levels
+      end
+
+    {:noreply, recompute_progression(socket, levels)}
+  end
+
+  def handle_event("set_level_class", %{"level_class" => level_class_params}, socket) do
+    {level_str, class} = extract_single_entry(level_class_params)
+    level_number = String.to_integer(level_str)
+    class = if class == "", do: nil, else: class
+
+    levels = Leveling.put_class(socket.assigns.levels, level_number, class)
+
+    {:noreply, recompute_progression(socket, levels)}
+  end
+
+  def handle_event("set_level_subclass", %{"level_subclass" => level_subclass_params}, socket) do
+    {level_str, subclass} = extract_single_entry(level_subclass_params)
+    level_number = String.to_integer(level_str)
+    subclass = if subclass == "", do: nil, else: subclass
+
+    levels = Leveling.put_subclass(socket.assigns.levels, level_number, subclass)
+
+    {:noreply, recompute_progression(socket, levels)}
+  end
+
+  def handle_event("set_level_feat", %{"level_feat" => level_feat_params}, socket) do
+    {level_str, feat} = extract_single_entry(level_feat_params)
+    level_number = String.to_integer(level_str)
+
+    levels = Leveling.put_feat(socket.assigns.levels, level_number, feat)
+
+    {:noreply, recompute_progression(socket, levels)}
+  end
+
+  defp extract_single_entry(params) do
+    params
+    |> Map.to_list()
+    |> List.first()
+  end
+
+  defp recompute_progression(socket, levels) do
+    socket
+    |> assign(:levels, levels)
+    |> assign(:progression, Leveling.compute(levels))
+    |> assign(:progression_errors, Leveling.validate(levels))
+  end
+
+  @impl true
   def render(assigns) do
     selected_race = form_value(assigns.form, :race)
     selected_class = form_value(assigns.form, :class)
-    subraces = Map.get(@subraces, selected_race, [])
-    subclasses = Map.get(@subclasses, selected_class, [])
+    subraces = Reference.subraces_for(selected_race)
+    subclasses = Reference.subclasses_for(selected_class)
 
     assigns =
       assigns
@@ -299,10 +306,10 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
       |> assign(:selected_class, selected_class)
       |> assign(:subraces, subraces)
       |> assign(:subclasses, subclasses)
-      |> assign(:race_options, @race_options)
-      |> assign(:class_options, @class_options)
-      |> assign(:background_options, @background_options)
-      |> assign(:alignment_options, @alignment_options)
+      |> assign(:race_options, Reference.races())
+      |> assign(:class_options, Reference.classes())
+      |> assign(:background_options, Reference.backgrounds())
+      |> assign(:alignment_options, Reference.alignments())
       |> assign(:stat_fields, @stat_fields)
 
     ~H"""
@@ -351,7 +358,7 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
             </div>
           </div>
 
-          <div class="grid gap-6 lg:grid-cols-2">
+          <div>
             <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6">
               <h2 class="mb-4 text-xl font-semibold text-white">Race & Sous-race</h2>
 
@@ -365,21 +372,14 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
                 />
               </div>
             </div>
-
-            <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6">
-              <h2 class="mb-4 text-xl font-semibold text-white">Classe & Sous-classe</h2>
-
-              <div class="space-y-5">
-                <.input field={@form[:class]} type="select" label="Classe" options={@class_options} />
-                <.input
-                  field={@form[:subclass]}
-                  type="select"
-                  label="Sous-classe"
-                  options={Enum.map(@subclasses, &{&1, &1})}
-                />
-              </div>
-            </div>
           </div>
+
+          <.level_progression
+            levels={@levels}
+            progression={@progression}
+            progression_errors={@progression_errors}
+            max_level={Leveling.max_level()}
+          />
 
           <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6">
             <h2 class="mb-4 text-xl font-semibold text-white">Historique</h2>
