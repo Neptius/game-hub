@@ -145,14 +145,14 @@ defmodule GameHub.Bg3.Character do
     secondary = get_field(changeset, :bonus_secondary)
 
     changeset =
-      if is_nil(primary) or primary in @stat_names do
+      if is_nil(primary) or primary in valid_stat_names() do
         changeset
       else
         add_error(changeset, :bonus_primary, "est invalide")
       end
 
     changeset =
-      if is_nil(secondary) or secondary in @stat_names do
+      if is_nil(secondary) or secondary in valid_stat_names() do
         changeset
       else
         add_error(changeset, :bonus_secondary, "est invalide")
@@ -167,5 +167,16 @@ defmodule GameHub.Bg3.Character do
     else
       changeset
     end
+  end
+
+  defp valid_stat_names do
+    [
+      "strength",
+      "dexterity",
+      "constitution",
+      "intelligence",
+      "wisdom",
+      "charisma"
+    ]
   end
 end
