@@ -63,7 +63,14 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
           id={"level-#{entry.level}"}
           class="rounded-xl border border-zinc-700 bg-zinc-950/60 p-4"
         >
-          <div class="grid gap-3 sm:grid-cols-[auto_1fr_1fr_auto] sm:items-end">
+          <div :if={entry.class_level} class="flex flex-row items-center justify-between w-full mb-3">
+            <div class="text-sm text-zinc-400">
+              Niveau <strong class="text-white">{entry.class_level}</strong>
+              en {Reference.class_name(entry.class_id)}
+            </div>
+          </div>
+
+          <div class="grid gap-3 sm:grid-cols-[auto_1fr_1fr_auto] sm:items-center">
             <div class="flex h-10 w-14 items-center justify-center rounded-lg bg-zinc-900 text-lg font-bold text-white">
               {entry.level}
             </div>
@@ -112,13 +119,6 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
                   {subclass.name}
                 </option>
               </select>
-            </div>
-
-            <div class="text-sm text-zinc-400">
-              <span :if={entry.class_level}>
-                Niveau <strong class="text-white">{entry.class_level}</strong>
-                en {Reference.class_name(entry.class_id)}
-              </span>
             </div>
           </div>
 
