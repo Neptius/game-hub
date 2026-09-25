@@ -71,7 +71,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
           </div>
 
           <div class="grid gap-3 sm:grid-cols-[auto_1fr_1fr_auto] sm:items-center">
-            <div class="flex h-10 w-14 items-center justify-center rounded-lg bg-zinc-900 text-lg font-bold text-white">
+            <div class="flex h-14 w-14 items-center justify-center rounded-lg bg-zinc-900 text-lg font-bold text-white">
               {entry.level}
             </div>
 
