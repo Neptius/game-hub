@@ -13,6 +13,8 @@ defmodule Mix.Tasks.Bg3.ImportReferences do
       personalities:
         "./uploads/BG3/Mods/HomeBrew-extracted/Mods/HomeBrew - Comprehensive Reworks/Localization/English/Classes Reworked (General).xml",
       character_traits:
+        "./uploads/BG3/Mods/HomeBrew-extracted/Mods/HomeBrew - Comprehensive Reworks/Localization/English/Classes Reworked (General).xml",
+      archetypes:
         "./uploads/BG3/Mods/HomeBrew-extracted/Mods/HomeBrew - Comprehensive Reworks/Localization/English/Classes Reworked (General).xml"
     }
 

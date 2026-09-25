@@ -5,10 +5,17 @@ defmodule GameHub.Bg3.Pak.Extractor do
 
   alias GameHub.Bg3.Pak.Reader
 
-  def start do
+  def homebrew do
     GameHub.Bg3.Pak.Extractor.extract(
       "./uploads/BG3/Mods/HomeBrew - Comprehensive Reworks.pak",
       "./uploads/BG3/Mods/HomeBrew-extracted"
+    )
+  end
+
+  def icon do
+    GameHub.Bg3.Pak.Extractor.extract(
+      "./uploads/BG3/Data/Icons.pak",
+      "./uploads/BG3/Data/Icons-extracted"
     )
   end
 
@@ -24,24 +31,6 @@ defmodule GameHub.Bg3.Pak.Extractor do
 
     IO.puts(data)
   end
-
-  # def debug_entry do
-  #   path = "./uploads/HomeBrew - Comprehensive Reworks.pak"
-
-  #   {:ok, file} = File.open(path, [:read, :binary])
-
-  #   {:ok, _} =
-  #     :file.position(
-  #       file,
-  #       {:bof, 470_924_264}
-  #     )
-
-  #   {:ok, data} = :file.read(file, 272)
-
-  #   IO.inspect(data, base: :hex, label: "entry")
-
-  #   File.close(file)
-  # end
 
   def extract(pak_path, output_dir) do
     with {:ok, pak} <- Reader.open(pak_path),

@@ -2,7 +2,8 @@ defmodule GameHub.Bg3.XmlReferenceImporter do
   alias GameHub.Bg3.XmlReferenceImporter.{
     CharacterTraitImporter,
     GodImporter,
-    PersonalityImporter
+    PersonalityImporter,
+    ArchetypeImporter
   }
 
   alias GameHub.Repo
@@ -13,7 +14,8 @@ defmodule GameHub.Bg3.XmlReferenceImporter do
         %{
           gods: GodImporter.sync!(paths.gods),
           personalities: PersonalityImporter.sync!(paths.personalities),
-          character_traits: CharacterTraitImporter.sync!(paths.character_traits)
+          character_traits: CharacterTraitImporter.sync!(paths.character_traits),
+          archetypes: ArchetypeImporter.sync!(paths.archetypes)
         }
       end)
 
