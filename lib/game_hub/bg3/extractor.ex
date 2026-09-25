@@ -12,12 +12,13 @@ defmodule GameHub.Bg3.Pak.Extractor do
     )
   end
 
-  def icon do
+  def game do
     GameHub.Bg3.Pak.Extractor.extract(
-      "./uploads/BG3/Data/Icons.pak",
-      "./uploads/BG3/Data/Icons-extracted"
+      "./uploads/BG3/Data/Game.pak",
+      "./uploads/BG3/Data/Game-extracted"
     )
   end
+
 
   def debug do
     {:ok, pak} =
