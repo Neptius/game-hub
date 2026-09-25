@@ -66,9 +66,6 @@ defmodule GameHub.Bg3.XmlReferenceImporter do
     |> SweetXml.parse()
   end
 
-  defp strip_bom(<<0xEF, 0xBB, 0xBF, rest::binary>>), do: rest
-  defp strip_bom(other), do: other
-
   defp extract_contents(xml) do
     xml
     |> xpath(~x"//contentList/content"l,
