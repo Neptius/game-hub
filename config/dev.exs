@@ -1,15 +1,5 @@
 import Config
 
-# Configure your database
-config :game_hub, GameHub.Repo,
-  username: "postgres",
-  password: "pass",
-  hostname: "localhost",
-  database: "game_hub_dev",
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10
-
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
@@ -75,3 +65,5 @@ config :phoenix_live_view,
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+import_config "dev.secret.exs"

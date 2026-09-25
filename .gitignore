@@ -37,3 +37,4 @@ npm-debug.log
 
 /uploads/
 
+*.secret.exs
