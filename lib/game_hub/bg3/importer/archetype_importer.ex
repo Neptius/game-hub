@@ -1,6 +1,6 @@
-defmodule GameHub.Bg3.XmlReferenceImporter.ArchetypeImporter do
+defmodule GameHub.Bg3.Importer.ArchetypeImporter do
   alias GameHub.Bg3.Archetype
-  alias GameHub.Bg3.XmlReferenceImporter.ImporterHelpers
+  alias GameHub.Bg3.Importer.ImporterHelpers
 
   @tracked_uids [
     "h6eb72b35g6633g4642gaf97gc5sarchety00",

@@ -1,4 +1,4 @@
-defmodule GameHub.Bg3.XmlReferenceImporter.ImporterHelpers do
+defmodule GameHub.Bg3.Importer.ImporterHelpers do
   import Ecto.Query
   import SweetXml
 

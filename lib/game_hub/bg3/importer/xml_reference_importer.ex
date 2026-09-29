@@ -1,5 +1,5 @@
-defmodule GameHub.Bg3.XmlReferenceImporter do
-  alias GameHub.Bg3.XmlReferenceImporter.{
+defmodule GameHub.Bg3.Importer do
+  alias GameHub.Bg3.Importer.{
     CharacterTraitImporter,
     GodImporter,
     PersonalityImporter,

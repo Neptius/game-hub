@@ -1,6 +1,6 @@
-defmodule GameHub.Bg3.XmlReferenceImporter.PersonalityImporter do
+defmodule GameHub.Bg3.Importer.PersonalityImporter do
   alias GameHub.Bg3.Personality
-  alias GameHub.Bg3.XmlReferenceImporter.ImporterHelpers
+  alias GameHub.Bg3.Importer.ImporterHelpers
 
   @tracked_uids [
     "h6eb72b35g6633g4642gaf97gcca5425bnone",

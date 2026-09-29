@@ -1,6 +1,6 @@
-defmodule GameHub.Bg3.XmlReferenceImporter.CharacterTraitImporter do
+defmodule GameHub.Bg3.Importer.CharacterTraitImporter do
   alias GameHub.Bg3.CharacterTrait
-  alias GameHub.Bg3.XmlReferenceImporter.ImporterHelpers
+  alias GameHub.Bg3.Importer.ImporterHelpers
 
   @tracked_uids [
     "h6eb72b35g6633g4642gaf97gc5sd4fdtnone",

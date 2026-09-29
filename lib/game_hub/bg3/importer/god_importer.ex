@@ -1,6 +1,6 @@
-defmodule GameHub.Bg3.XmlReferenceImporter.GodImporter do
+defmodule GameHub.Bg3.Importer.GodImporter do
   alias GameHub.Bg3.God
-  alias GameHub.Bg3.XmlReferenceImporter.ImporterHelpers
+  alias GameHub.Bg3.Importer.ImporterHelpers
 
   @tracked_uids [
     "h6eb72b35g6633g4642gaf97gcca5425nogod",
