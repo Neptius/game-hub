@@ -19,7 +19,6 @@ defmodule GameHub.Bg3.Pak.Extractor do
     )
   end
 
-
   def debug do
     {:ok, pak} =
       GameHub.Bg3.Pak.Reader.open("./uploads/BG3/Mods/HomeBrew - Comprehensive Reworks.pak")
