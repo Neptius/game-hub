@@ -38,8 +38,7 @@ defmodule GameHub.Bg3.Importer.ArchetypeImporter do
               %{
                 contentuid: contentuid,
                 name: name,
-                description:
-                  ImporterHelpers.next_content_text(contents, contentuid)
+                description: ImporterHelpers.next_content_text(contents, contentuid)
               }
             ]
 

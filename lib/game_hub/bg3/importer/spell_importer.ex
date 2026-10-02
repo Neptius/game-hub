@@ -1,13 +1,5 @@
 defmodule GameHub.Bg3.Importer.SpellImporter do
-  import SweetXml
-
-  alias GameHub.Bg3.Importer.ImportHelpers
-
-  @xml_paths [
-    "./uploads/BG3/Mods/HomeBrew-extracted/Mods/HomeBrew - Comprehensive Reworks/Localization/English/Spells Reworked.xml",
-    "./uploads/BG3/Mods/HomeBrew-extracted/Mods/HomeBrew - Comprehensive Reworks/Localization/English/Spells Reworked - 5e Integration.xml",
-    "./uploads/BG3/Mods/HomeBrew-extracted/Mods/HomeBrew - Comprehensive Reworks/Localization/English/Spells Reworked - Dawnstar Integration.xml"
-  ]
+  alias GameHub.Bg3.Spell
 
   @txt_paths [
     "./uploads/BG3/Mods/HomeBrew-extracted/Public/HomeBrew - Comprehensive Reworks/Stats/Generated/Data/Spells Reworked - Spell_Projectile.txt",
@@ -20,14 +12,83 @@ defmodule GameHub.Bg3.Importer.SpellImporter do
     "./uploads/BG3/Mods/HomeBrew-extracted/Public/HomeBrew - Comprehensive Reworks/Stats/Generated/Data/Spells Reworked - Spell_Zone.txt"
   ]
 
-  def execute do
-    path = "./uploads/BG3/Mods/HomeBrew-extracted/Public/HomeBrew - Comprehensive Reworks/Stats/Generated/Data/Spells Reworked - Spell_Projectile.txt"
+  @xml_paths [
+    "./uploads/BG3/Mods/HomeBrew-extracted/Mods/HomeBrew - Comprehensive Reworks/Localization/English/Spells Reworked.xml",
+    "./uploads/BG3/Mods/HomeBrew-extracted/Mods/HomeBrew - Comprehensive Reworks/Localization/English/Spells Reworked - 5e Integration.xml",
+    "./uploads/BG3/Mods/HomeBrew-extracted/Mods/HomeBrew - Comprehensive Reworks/Localization/English/Spells Reworked - Dawnstar Integration.xml"
+  ]
 
+  def execute do
+    @txt_paths
+    |> Enum.flat_map(&parse_file/1)
+
+  end
+
+  defp upsert(attrs) do
+    %Spell{}
+    |> Spell.changeset(attrs)
+    |> GameHub.Repo.insert(
+      on_conflict: {:replace_all_except, [:id, :inserted_at]},
+      conflict_target: :contentuid
+    )
+  end
+
+  defp sync do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    rows =
+      Enum.map(records, fn record ->
+        Map.merge(record, %{
+          inserted_at: now,
+          updated_at: now
+        })
+      end)
+
+    Repo.insert_all(
+      schema,
+      rows,
+      on_conflict: {:replace, fields},
+      conflict_target: :contentuid
+    )
+
+
+
+    deleted =
+      delete_untracked_records!(
+        Personality,
+        records
+      )
+
+    %{
+      imported: length(records),
+      deleted: deleted
+    }
+  end
+
+  def upsert!(schema, records, fields) do
+  end
+
+  def delete_untracked_records!(schema, imported_records) do
+    imported_contentuids = Enum.map(imported_records, & &1.contentuid)
+
+    query =
+      if imported_contentuids == [] do
+        from(record in schema)
+      else
+        from record in schema,
+          where: record.contentuid not in ^imported_contentuids
+      end
+
+    {deleted_count, _} = Repo.delete_all(query)
+    deleted_count
+  end
+
+  defp parse_file(path) do
     path
     |> File.read!()
     |> String.split(~r/\R/)
     |> Enum.reduce([], &parse_line/2)
-    |> Enum.filter(&(&1.data["Level"]))
+    |> Enum.filter(& &1.data["Level"])
     |> Enum.reverse()
   end
 

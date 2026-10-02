@@ -66,7 +66,7 @@ defmodule GameHub.Bg3.Importer.ImporterHelpers do
 
     query =
       if imported_contentuids == [] do
-        from record in schema
+        from(record in schema)
       else
         from record in schema,
           where: record.contentuid not in ^imported_contentuids
