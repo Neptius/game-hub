@@ -3,10 +3,11 @@ defmodule GameHub.Bg3.Spell do
   import Ecto.Changeset
 
   schema "bg3_spells" do
-    field :contentuid, :string
+    field :internalId, :string
     field :name, :string
     field :description, :string
     field :level, :integer
+    field :school, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -14,7 +15,7 @@ defmodule GameHub.Bg3.Spell do
   @doc false
   def changeset(spell, attrs) do
     spell
-    |> cast(attrs, [:contentuid, :name, :description, :level])
-    |> validate_required([:contentuid, :name, :description, :level])
+    |> cast(attrs, [:internalId, :name, :description, :level, :school])
+    |> validate_required([:internalId, :name, :description, :level, :school])
   end
 end

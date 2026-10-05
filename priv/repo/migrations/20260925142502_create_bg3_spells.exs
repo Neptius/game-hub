@@ -3,17 +3,18 @@ defmodule GameHub.Repo.Migrations.CreateBg3Spells do
 
   def change do
     create table(:bg3_spells) do
-      add :contentuid, :string, null: false
+      add :internalId, :string, null: false
       add :name, :string, null: false
       add :description, :text, null: false
       add :level, :integer, null: false
+      add :school, :string, null: false
 
       timestamps(type: :utc_datetime)
     end
 
     create unique_index(
              :bg3_spells,
-             [:contentuid]
+             [:internalId]
            )
   end
 end
