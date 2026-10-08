@@ -5,7 +5,9 @@ defmodule GameHub.Bg3.Spell do
   schema "bg3_spells" do
     field :internalId, :string
     field :name, :string
+    field :nameUid, :string
     field :description, :string
+    field :descriptionUid, :string
     field :level, :integer
     field :school, :string
 
@@ -15,7 +17,15 @@ defmodule GameHub.Bg3.Spell do
   @doc false
   def changeset(spell, attrs) do
     spell
-    |> cast(attrs, [:internalId, :name, :description, :level, :school])
-    |> validate_required([:internalId, :name, :description, :level, :school])
+    |> cast(attrs, [:internalId, :name, :nameUid, :description, :descriptionUid, :level, :school])
+    |> validate_required([
+      :internalId,
+      :name,
+      :nameUid,
+      :description,
+      :descriptionUid,
+      :level,
+      :school
+    ])
   end
 end
