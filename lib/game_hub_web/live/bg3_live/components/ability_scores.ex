@@ -49,14 +49,14 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
                   :if={@bonus_primary == stat}
                   class="ml-2 font-medium text-amber-400"
                 >
-                  Bonus racial +3
+                  Bonus +3
                 </span>
 
                 <span
                   :if={@bonus_secondary == stat}
                   class="ml-2 font-medium text-emerald-400"
                 >
-                  Bonus racial +1
+                  Bonus +1
                 </span>
               </p>
             </div>
@@ -128,7 +128,7 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
               />
 
               <span class="text-sm text-zinc-300">
-                Bonus racial <strong class="text-amber-400">+3</strong>
+                Bonus <strong class="text-amber-400">+3</strong>
               </span>
             </label>
 
@@ -152,7 +152,7 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
               />
 
               <span class="text-sm text-zinc-300">
-                Bonus racial <strong class="text-emerald-400">+1</strong>
+                Bonus <strong class="text-emerald-400">+1</strong>
               </span>
             </label>
           </div>
@@ -165,7 +165,7 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
         </p>
         <p class="mt-1">
           Une caractéristique peut atteindre <strong class="text-zinc-200">{@max_stat + 3}</strong>
-          grâce au bonus racial de +3.
+          grâce au bonus de +3.
         </p>
       </div>
     </div>

@@ -22,10 +22,6 @@ defmodule GameHub.Bg3.Importer.SpellImporter do
     "./uploads/BG3/Mods/HomeBrew-extracted/Mods/HomeBrew - Comprehensive Reworks/Localization/English/Spells Reworked - Dawnstar Integration.xml"
   ]
 
-  # ---------------------------------------------------------------------------
-  # Import
-  # ---------------------------------------------------------------------------
-
   def import do
     Repo.transaction(fn ->
       localizations = load_localizations()
@@ -43,52 +39,7 @@ defmodule GameHub.Bg3.Importer.SpellImporter do
   end
 
   # ---------------------------------------------------------------------------
-  # Localizations
-  # ---------------------------------------------------------------------------
-
-  defp load_localizations do
-    @xml_paths
-    |> Enum.flat_map(&parse_localization_file/1)
-    |> Map.new()
-  end
-
-  defp parse_localization_file(path) do
-    path
-    |> File.read!()
-    |> xpath(
-      ~x"//content"l,
-      uid: ~x"./@contentuid"s,
-      version: ~x"./@version"s,
-      text: ~x"./text()"s
-    )
-    |> Enum.map(fn localization ->
-      key = localization_key(
-        localization.uid,
-        localization.version
-      )
-
-      {key, localization.text}
-    end)
-  end
-
-  defp localization_key(uid, version) do
-    "#{uid};#{version}"
-  end
-
-  defp resolve_localization(nil, _localizations), do: nil
-
-  defp resolve_localization(value, localizations) do
-    case Map.get(localizations, value) do
-      nil ->
-        value
-
-      text ->
-        text
-    end
-  end
-
-  # ---------------------------------------------------------------------------
-  # Parsing TXT
+  # TXT parsing
   # ---------------------------------------------------------------------------
 
   defp parse_file(path) do
@@ -114,12 +65,7 @@ defmodule GameHub.Bg3.Importer.SpellImporter do
 
     case Regex.run(~r/^new entry "([^"]+)"/, line) do
       [_, id] ->
-        [
-          %{
-            id: id,
-            data: %{}
-          }
-        ]
+        [%{id: id, data: %{}}]
 
       _ ->
         []
@@ -137,13 +83,7 @@ defmodule GameHub.Bg3.Importer.SpellImporter do
                capture: :all_but_first
              ) do
           [id] ->
-            [
-              %{
-                id: id,
-                data: %{}
-              }
-              | [current | rest]
-            ]
+            [%{id: id, data: %{}} | [current | rest]]
 
           _ ->
             [current | rest]
@@ -158,10 +98,7 @@ defmodule GameHub.Bg3.Importer.SpellImporter do
           [key, value] ->
             data = Map.put(current.data, key, value)
 
-            [
-              %{current | data: data}
-              | rest
-            ]
+            [%{current | data: data} | rest]
 
           _ ->
             [current | rest]
@@ -173,12 +110,57 @@ defmodule GameHub.Bg3.Importer.SpellImporter do
   end
 
   # ---------------------------------------------------------------------------
-  # Mapping
+  # Localization
+  # ---------------------------------------------------------------------------
+
+  defp load_localizations do
+    @xml_paths
+    |> Enum.flat_map(&parse_localization_file/1)
+    |> Map.new()
+  end
+
+  defp parse_localization_file(path) do
+    path
+    |> File.read!()
+    |> xpath(
+      ~x"//content"l,
+      uid: ~x"./@contentuid"s,
+      text: ~x"./text()"s
+    )
+    |> Enum.map(fn localization ->
+      {
+        localization.uid,
+        localization.text
+      }
+    end)
+  end
+
+  # Garde uniquement la partie avant le premier ";"
+  #
+  # Exemple :
+  # "hceb123456;1" -> "hceb123456"
+  # "hceb123456;4" -> "hceb123456"
+  defp uid(value) when is_binary(value) do
+    value
+    |> String.split(";", parts: 2)
+    |> hd()
+  end
+
+  defp uid(nil), do: nil
+
+  defp resolve_localization(nil, _localizations), do: nil
+
+  defp resolve_localization(uid, localizations) do
+    Map.get(localizations, uid, uid)
+  end
+
+  # ---------------------------------------------------------------------------
+  # Entity creation
   # ---------------------------------------------------------------------------
 
   defp create_record(%{id: id, data: data}, localizations) do
-    name_uid = data["DisplayName"]
-    description_uid = data["Description"]
+    name_uid = uid(data["DisplayName"])
+    description_uid = uid(data["Description"])
 
     %Spell{
       internalId: id,
@@ -201,12 +183,19 @@ defmodule GameHub.Bg3.Importer.SpellImporter do
     }
   end
 
+  # ---------------------------------------------------------------------------
+  # Helpers
+  # ---------------------------------------------------------------------------
+
   defp parse_integer(nil), do: nil
 
   defp parse_integer(value) do
     case Integer.parse(value) do
-      {integer, _} -> integer
-      :error -> nil
+      {integer, _} ->
+        integer
+
+      :error ->
+        nil
     end
   end
 
@@ -225,16 +214,12 @@ defmodule GameHub.Bg3.Importer.SpellImporter do
       Enum.map(rows, fn row ->
         %{
           internalId: row.internalId,
-
           name: row.name,
           nameUid: row.nameUid,
-
           description: row.description,
           descriptionUid: row.descriptionUid,
-
           level: row.level,
           school: row.school,
-
           inserted_at: now,
           updated_at: now
         }
@@ -258,9 +243,7 @@ defmodule GameHub.Bg3.Importer.SpellImporter do
       |> Enum.map(& &1.internalId)
       |> Enum.uniq()
 
-    from(s in Spell,
-      where: s.internalId not in ^internal_ids
-    )
+    from(s in Spell, where: s.internalId not in ^internal_ids)
     |> Repo.delete_all()
   end
 end
