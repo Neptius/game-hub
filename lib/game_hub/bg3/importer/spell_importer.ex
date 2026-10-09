@@ -135,11 +135,6 @@ defmodule GameHub.Bg3.Importer.SpellImporter do
     end)
   end
 
-  # Garde uniquement la partie avant le premier ";"
-  #
-  # Exemple :
-  # "hceb123456;1" -> "hceb123456"
-  # "hceb123456;4" -> "hceb123456"
   defp uid(value) when is_binary(value) do
     value
     |> String.split(";", parts: 2)

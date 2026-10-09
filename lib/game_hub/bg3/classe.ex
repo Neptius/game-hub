@@ -11,6 +11,9 @@ defmodule GameHub.BG3.Classe do
     field :description, :string
     field :description_uid, :string
 
+    field :base_hp, :integer
+    field :hp_per_level, :integer
+
     field :force, :integer
     field :dexterity, :integer
     field :constitution, :integer

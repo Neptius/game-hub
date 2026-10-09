@@ -7,7 +7,10 @@ defmodule GameHub.BG3.SubClasse do
   schema "sub_classes" do
     field :internal_id, :string
     field :name, :string
+    field :name_uid, :string
     field :description, :string
+    field :description_uid, :string
+    field :classe_uid, :string
 
     belongs_to :classe, Classe
 
@@ -19,12 +22,16 @@ defmodule GameHub.BG3.SubClasse do
     sub_classe
     |> cast(attrs, [
       :name,
+      :name_uid,
       :description,
+      :description_uid,
       :classe_id
     ])
     |> validate_required([
       :name,
+      :name_uid,
       :description,
+      :description_uid,
       :classe_id
     ])
   end
