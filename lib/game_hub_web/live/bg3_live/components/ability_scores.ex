@@ -17,11 +17,11 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
 
   def ability_scores(assigns) do
     ~H"""
-    <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6">
-      <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+      <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 class="text-xl font-semibold text-white">Caractéristiques</h2>
-          <p class="mt-1 text-sm text-zinc-400">
+          <h2 class="text-lg font-semibold text-white">Caractéristiques</h2>
+          <p class="mt-1 text-xs text-zinc-400">
             Répartissez vos {@total_points} points entre les six caractéristiques.
           </p>
         </div>
@@ -32,36 +32,24 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
         </div>
       </div>
 
-      <div class="space-y-3">
+      <div class="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
         <div
           :for={stat <- @stat_fields}
           id={"stat-#{stat}"}
-          class="rounded-xl border border-zinc-700 bg-zinc-950/60 p-4 transition hover:border-zinc-500"
+          class="rounded-xl border border-zinc-700 bg-zinc-950/60 p-3 transition hover:border-zinc-500"
         >
-          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="min-w-0">
-              <p class="font-semibold text-white">{stat_label(stat)}</p>
+              <p class="font-semibold text-white flex flex-row items-center justify-between gap-2">
+                {stat_label(stat)}
 
-              <p class="mt-1 text-xs text-zinc-500">
-                Base : {@base_scores[stat]}
-
-                <span
-                  :if={@bonus_primary == stat}
-                  class="ml-2 font-medium text-amber-400"
-                >
-                  Bonus +3
-                </span>
-
-                <span
-                  :if={@bonus_secondary == stat}
-                  class="ml-2 font-medium text-emerald-400"
-                >
-                  Bonus +1
+                <span class="text-sm font-bold text-amber-400">
+                  {ability_modifier_label(final_score(assigns, stat))}
                 </span>
               </p>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
               <button
                 type="button"
                 id={"decrement-#{stat}"}
@@ -69,26 +57,14 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
                 phx-value-stat={stat}
                 disabled={@base_scores[stat] <= @min_stat}
                 aria-label={"Diminuer #{stat_label(stat)}"}
-                class="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-600 text-lg text-zinc-200 transition hover:border-amber-400 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-30"
+                class="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-600 text-lg text-zinc-200 transition hover:border-amber-400 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-30"
               >
                 −
               </button>
 
-              <div class="flex min-w-16 flex-col items-center rounded-lg bg-zinc-900 px-3 py-2">
-                <span class="text-2xl font-bold text-white">
+              <div class="flex items-baseline gap-2 rounded-lg bg-zinc-900 px-2 py-1.5">
+                <span class="text-xl font-bold text-white">
                   {final_score(assigns, stat)}
-                </span>
-
-                <span class="mt-1 text-xs uppercase tracking-wide text-zinc-500">
-                  Score
-                </span>
-
-                <span class="mt-1 text-sm font-bold text-amber-400">
-                  {ability_modifier_label(final_score(assigns, stat))}
-                </span>
-
-                <span class="text-[10px] uppercase tracking-wide text-zinc-500">
-                  Modificateur
                 </span>
               </div>
 
@@ -102,7 +78,7 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
                     @remaining_points < step_cost(@base_scores[stat], :up)
                 }
                 aria-label={"Augmenter #{stat_label(stat)}"}
-                class="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-600 text-lg text-zinc-200 transition hover:border-amber-400 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-30"
+                class="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-600 text-lg text-zinc-200 transition hover:border-amber-400 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-30"
               >
                 +
               </button>
@@ -115,8 +91,8 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
             />
           </div>
 
-          <div class="mt-4 grid gap-2 border-t border-zinc-800 pt-3 sm:grid-cols-2">
-            <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-zinc-800 px-3 py-2 transition hover:border-amber-500/50">
+          <div class="mt-3 grid gap-2 border-t border-zinc-800 pt-3 sm:grid-cols-2">
+            <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-800 px-2 py-1.5 transition hover:border-amber-500/50">
               <input
                 type="checkbox"
                 id={"bonus-primary-#{stat}"}
@@ -127,13 +103,13 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
                 class="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-amber-500 focus:ring-amber-500"
               />
 
-              <span class="text-sm text-zinc-300">
-                Bonus <strong class="text-amber-400">+3</strong>
+              <span class="text-xs text-zinc-300">
+                <strong class="text-amber-400">+3</strong>
               </span>
             </label>
 
             <label class={[
-              "flex items-center gap-3 rounded-lg border border-zinc-800 px-3 py-2 transition",
+              "flex items-center gap-2 rounded-lg border border-zinc-800 px-2 py-1.5 transition",
               if(
                 @bonus_primary == stat,
                 do: "cursor-not-allowed opacity-40",
@@ -151,15 +127,15 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
                 class="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-emerald-500 focus:ring-emerald-500 disabled:cursor-not-allowed"
               />
 
-              <span class="text-sm text-zinc-300">
-                Bonus <strong class="text-emerald-400">+1</strong>
+              <span class="text-xs text-zinc-300">
+                <strong class="text-emerald-400">+1</strong>
               </span>
             </label>
           </div>
         </div>
       </div>
 
-      <div class="mt-5 rounded-xl border border-zinc-800 bg-zinc-950/40 p-4 text-sm text-zinc-400">
+      <div class="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/40 p-3 text-xs text-zinc-400">
         <p>
           Les valeurs de base vont de <strong class="text-zinc-200">{@min_stat} à {@max_stat}</strong>.
         </p>
@@ -202,10 +178,10 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
     if modifier >= 0, do: "+#{modifier}", else: Integer.to_string(modifier)
   end
 
-  defp stat_label(:strength), do: "Force"
-  defp stat_label(:dexterity), do: "Dextérité"
-  defp stat_label(:constitution), do: "Constitution"
-  defp stat_label(:intelligence), do: "Intelligence"
-  defp stat_label(:wisdom), do: "Sagesse"
-  defp stat_label(:charisma), do: "Charisme"
+  defp stat_label(:strength), do: "STR"
+  defp stat_label(:dexterity), do: "DEX"
+  defp stat_label(:constitution), do: "CON"
+  defp stat_label(:intelligence), do: "INT"
+  defp stat_label(:wisdom), do: "WIS"
+  defp stat_label(:charisma), do: "CHA"
 end

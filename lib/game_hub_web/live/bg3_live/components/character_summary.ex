@@ -35,15 +35,15 @@ defmodule GameHubWeb.Bg3Live.Components.CharacterSummary do
       |> assign(:initiative, initiative)
 
     ~H"""
-    <div class="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-6 shadow-xl shadow-zinc-950/30">
-      <h2 class="text-lg font-semibold text-white">Récapitulatif</h2>
+    <div class="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-4 shadow-xl shadow-zinc-950/30">
+      <h2 class="text-base font-semibold text-white">Récapitulatif</h2>
 
-      <div class="mt-4 flex items-center justify-between rounded-xl bg-zinc-950/60 px-4 py-3">
+      <div class="mt-3 flex items-center justify-between rounded-xl bg-zinc-950/60 px-3 py-2">
         <span class="text-sm text-zinc-400">Niveau</span>
         <span class="text-2xl font-bold text-amber-400">{@max_level}</span>
       </div>
 
-      <div class="mt-4">
+      <div class="mt-3">
         <p class="mb-2 text-xs uppercase tracking-wide text-zinc-500">Classes</p>
 
         <div :if={@class_levels == []} class="text-sm text-zinc-500">
@@ -70,13 +70,13 @@ defmodule GameHubWeb.Bg3Live.Components.CharacterSummary do
         </ul>
       </div>
 
-      <div class="mt-5 grid grid-cols-2 gap-3">
-        <div class="rounded-xl bg-zinc-950/60 p-3 text-center">
+      <div class="mt-4 grid grid-cols-2 gap-2">
+        <div class="rounded-xl bg-zinc-950/60 p-2 text-center">
           <p class="text-xs uppercase tracking-wide text-zinc-500">PV</p>
           <p class="mt-1 text-2xl font-bold text-emerald-400">{@hp}</p>
         </div>
 
-        <div class="rounded-xl bg-zinc-950/60 p-3 text-center">
+        <div class="rounded-xl bg-zinc-950/60 p-2 text-center">
           <p class="text-xs uppercase tracking-wide text-zinc-500">Initiative</p>
           <p class="mt-1 text-2xl font-bold text-sky-400">
             {modifier_label(@initiative)}

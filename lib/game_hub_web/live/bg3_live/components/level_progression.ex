@@ -11,11 +11,11 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
 
   def level_progression(assigns) do
     ~H"""
-    <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6">
-      <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+      <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 class="text-xl font-semibold text-white">Progression</h2>
-          <p class="mt-1 text-sm text-zinc-400">
+          <h2 class="text-lg font-semibold text-white">Progression</h2>
+          <p class="mt-1 text-xs text-zinc-400">
             Niveaux 1 à {@max_level}. Une classe conserve la même sous-classe sur toute la progression.
           </p>
         </div>
@@ -57,11 +57,11 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
         </p>
       </div>
 
-      <div class="space-y-3">
+      <div class="space-y-2">
         <div
           :for={entry <- @progression}
           id={"level-#{entry.level}"}
-          class="rounded-xl border border-zinc-700 bg-zinc-950/60 p-4"
+          class="rounded-xl border border-zinc-700 bg-zinc-950/60 p-3"
         >
           <div :if={entry.class_level} class="flex flex-row items-center justify-between w-full mb-3">
             <div class="text-sm text-zinc-400">
@@ -70,8 +70,8 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
             </div>
           </div>
 
-          <div class="grid gap-3 sm:grid-cols-[auto_1fr_1fr_auto] sm:items-center">
-            <div class="flex h-14 w-14 items-center justify-center rounded-lg bg-zinc-900 text-lg font-bold text-white">
+          <div class="grid gap-2 sm:grid-cols-[2.5rem_1fr_1fr] sm:items-end">
+            <div class="flex h-10 w-10 items-center justify-center self-end rounded-lg bg-zinc-900 text-base font-bold text-white">
               {entry.level}
             </div>
 
@@ -83,7 +83,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
               <select
                 name={"level_class[#{entry.level}]"}
                 phx-change="set_level_class"
-                class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-amber-400 focus:outline-none"
+                class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-100 focus:border-amber-400 focus:outline-none"
               >
                 <option value="" selected={is_nil(entry.class_id)}>— Choisir —</option>
                 <option
@@ -106,7 +106,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
                 phx-change="set_level_subclass"
                 disabled={subclass_disabled?(entry, @progression)}
                 class={[
-                  "w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-amber-400 focus:outline-none",
+                  "w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-100 focus:border-amber-400 focus:outline-none",
                   subclass_disabled?(entry, @progression) && "cursor-not-allowed opacity-50"
                 ]}
               >

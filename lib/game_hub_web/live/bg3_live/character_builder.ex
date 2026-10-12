@@ -312,17 +312,17 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
 
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="grid gap-8 lg:grid-cols-[1fr_320px]">
+      <div class="mx-auto grid max-w-screen-2xl gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
         <.form
           for={@form}
           id="character-form"
           phx-change="validate"
           phx-submit="save"
-          class="space-y-8"
+          class="space-y-4"
         >
-          <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6">
-            <div class="mb-4 flex items-center justify-between">
-              <h2 class="text-xl font-semibold text-white">Identité</h2>
+          <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+            <div class="mb-3 flex items-center justify-between">
+              <h2 class="text-lg font-semibold text-white">Identité & origine</h2>
               <%!--
                 <button
                   type="button"
@@ -335,7 +335,7 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
               --%>
             </div>
 
-            <div class="grid gap-5 md:grid-cols-2">
+            <div class="grid gap-x-4 gap-y-3 md:grid-cols-2">
               <.input
                 field={@form[:name]}
                 type="text"
@@ -349,34 +349,22 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
                 options={@alignment_options}
               />
             </div>
-          </div>
 
-          <div>
-            <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6">
-              <h2 class="mb-4 text-xl font-semibold text-white">Race & Sous-race</h2>
-
-              <div class="space-y-5">
-                <.input field={@form[:race]} type="select" label="Race" options={@race_options} />
-                <.input
-                  field={@form[:subrace]}
-                  type="select"
-                  label="Sous-race"
-                  options={Enum.map(@subraces, &{&1, &1})}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6">
-            <h2 class="mb-4 text-xl font-semibold text-white">Historique</h2>
-            <div class="grid gap-5 md:grid-cols-2">
+            <div class="mt-3 grid gap-x-4 gap-y-3 md:grid-cols-2">
+              <.input field={@form[:race]} type="select" label="Race" options={@race_options} />
+              <.input
+                field={@form[:subrace]}
+                type="select"
+                label="Sous-race"
+                options={Enum.map(@subraces, &{&1, &1})}
+              />
               <.input
                 field={@form[:background]}
                 type="select"
                 label="Historique"
                 options={@background_options}
               />
-              <.input field={@form[:notes]} type="textarea" label="Notes" rows={4} />
+              <.input field={@form[:notes]} type="textarea" label="Notes" rows={2} />
             </div>
           </div>
 
@@ -398,7 +386,7 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
             max_stat={15}
           />
 
-          <div class="flex justify-end gap-4">
+          <div class="flex justify-end gap-3">
             <.link
               navigate={~p"/baldurs-gate-3/characters"}
               class="inline-flex items-center rounded-xl border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-200 transition hover:border-zinc-500"
@@ -412,7 +400,7 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
           </div>
         </.form>
 
-        <aside class="lg:sticky lg:top-6 lg:self-start">
+        <aside class="lg:sticky lg:top-4 lg:self-start">
           <.character_summary
             progression={@progression}
             base_scores={@base_scores}
