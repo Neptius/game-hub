@@ -394,7 +394,8 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
               Annuler
             </.link>
 
-            <.button class="bg-amber-500 text-zinc-950 hover:bg-amber-400">
+            <.button
+              class="cursor-pointer inline-flex items-center rounded-xl border border-amber-500 px-4 py-2 text-sm font-medium bg-amber-500 text-zinc-950 hover:bg-amber-400">
               Enregistrer
             </.button>
           </div>

@@ -7,7 +7,6 @@ defmodule GameHub.BG3.Importer.ClasseImporter do
   alias GameHub.BG3.Classe
   alias GameHub.BG3.SubClasse
 
-
   @lsx_paths [
     "/Users/aymeric/Documents/Dev/Perso/game_hub/uploads/BG3/Mods/HomeBrew-extracted/Public/HomeBrew - Comprehensive Reworks/ClassDescriptions/ClassDescriptions.lsx"
   ]
@@ -29,16 +28,18 @@ defmodule GameHub.BG3.Importer.ClasseImporter do
   ]
 
   def import do
-    # Repo.transaction(fn ->
-    localizations = load_localizations()
+    Repo.transaction(fn ->
+      localizations = load_localizations()
 
-    rows =
-      @lsx_paths
-      |> Enum.flat_map(&parse_file!/1)
-      |> Enum.map(&build_class/1)
-      |> Enum.map(&create_record(&1, localizations))
+      {classe_records, sub_classes_records} =
+        @lsx_paths
+        |> Enum.flat_map(&parse_file!/1)
+        |> Enum.map(&build_class/1)
+        |> Enum.map(&create_record(&1, localizations))
+        |> organize_records()
 
-    # end)
+      classe = upsert_classe_records(classe_records)
+    end)
   end
 
   # ---------------------------------------------------------------------------
@@ -112,34 +113,82 @@ defmodule GameHub.BG3.Importer.ClasseImporter do
   # ---------------------------------------------------------------------------
 
   defp create_record(%{"ParentGuid" => _} = raw, localizations) do
-    %SubClasse{
+    %{
       internal_id: raw["Name"],
       name: resolve_localization(raw["DisplayName"], localizations),
       name_uid: raw["DisplayName"],
-      description: resolve_localization(raw["Description"], localizations),
+      description: parse_description(raw["Description"], localizations),
       description_uid: raw["Description"],
+      role: parse_role(raw["Description"], localizations),
       classe_uid: raw["ParentGuid"]
     }
   end
 
-
   defp create_record(raw, localizations) do
-    %Classe{
+    %{
       internal_id: raw["Name"],
       name: resolve_localization(raw["DisplayName"], localizations),
       name_uid: raw["DisplayName"],
-      description: resolve_localization(raw["Description"], localizations),
+      description: parse_description(raw["Description"], localizations),
       description_uid: raw["Description"],
       base_hp: raw["BaseHp"],
-      hp_per_level: raw["HpPerLevel"]
-   }
+      hp_per_level: raw["HpPerLevel"],
+      spell_list_uid: raw["SpellList"],
+      primary_ability: map_ability(raw["PrimaryAbility"]),
+      spell_casting_ability: map_ability(raw["SpellCastingAbility"])
+    }
   end
 
+  defp organize_records(rows) do
+    Enum.split_with(rows, fn
+      %{classe_uid: _} -> false
+      _ -> true
+    end)
+  end
 
+  defp upsert_classe_records([]), do: {0, nil}
 
-  defp upsert_records(rows) do
+  defp upsert_classe_records(classe_records) do
+    Repo.insert_all(Classe, classe_records,
+      on_conflict: {:replace_all_except, [:id, :inserted_at]},
+      conflict_target: [:internal_id]
+    )
   end
 
   defp delete_removed_records(rows) do
+  end
+
+  # ---------------------------------------------------------------------------
+  # Helper functions
+  # ---------------------------------------------------------------------------
+
+  # Parses a raw description string, resolves its localization and remove the role information.
+  defp parse_description(description_uid, localizations) do
+    description_uid
+    |> resolve_localization(localizations)
+    |> String.replace(~r/Intended Role\(s\): .+/, "")
+  end
+
+  # Parses a description string and returns the intended role(s), or nil.
+  defp parse_role(description_uid, localizations) do
+    raw_description = resolve_localization(description_uid, localizations)
+
+    case Regex.run(~r/Intended Role\(s\): (.+)/, raw_description) do
+      [_, role] -> role
+      _ -> "N/A"
+    end
+  end
+
+  # Maps abilities from the raw data.
+  defp map_ability(raw_ability) do
+    case raw_ability do
+      1 -> "Strength"
+      2 -> "Dexterity"
+      3 -> "Constitution"
+      4 -> "Intelligence"
+      5 -> "Wisdom"
+      6 -> "Charisma"
+      _ -> "Unknown"
+    end
   end
 end
