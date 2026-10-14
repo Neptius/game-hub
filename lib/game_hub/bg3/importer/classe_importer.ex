@@ -40,6 +40,9 @@ defmodule GameHub.BG3.Importer.ClasseImporter do
 
       upsert_classe_records(classe_records)
       upsert_sub_classe_records(sub_classes_records)
+
+      delete_untracked_sub_classe_records(sub_classes_records)
+      delete_untracked_classe_records(classe_records)
     end)
   end
 
@@ -128,7 +131,7 @@ defmodule GameHub.BG3.Importer.ClasseImporter do
   defp create_record(raw, localizations) do
     %{
       internal_id: raw["UUID"],
-      name: resolve_localization(raw["DisplayName"], localizations),
+      name: raw["Name"],
       name_uid: raw["DisplayName"],
       description: parse_description(raw["Description"], localizations),
       description_uid: raw["Description"],
@@ -189,7 +192,20 @@ defmodule GameHub.BG3.Importer.ClasseImporter do
     )
   end
 
-  defp delete_removed_records(rows) do
+  defp delete_untracked_classe_records([]) do
+    Repo.delete_all(Classe)
+  end
+  defp delete_untracked_classe_records(rows) do
+    internal_ids = Enum.map(rows, & &1.internal_id)
+    Repo.delete_all(from c in Classe, where: c.internal_id not in ^internal_ids)
+  end
+
+  defp delete_untracked_sub_classe_records([]) do
+    Repo.delete_all(SubClasse)
+  end
+  defp delete_untracked_sub_classe_records(rows) do
+    internal_ids = Enum.map(rows, & &1.internal_id)
+    Repo.delete_all(from sc in SubClasse, where: sc.internal_id not in ^internal_ids)
   end
 
   # ---------------------------------------------------------------------------
