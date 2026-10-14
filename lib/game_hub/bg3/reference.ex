@@ -19,21 +19,6 @@ defmodule GameHub.Bg3.Reference do
     %{id: 10, name: "Githyanki"}
   ]
 
-  @classes [
-    %{id: 1, name: "Barbare"},
-    %{id: 2, name: "Barde"},
-    %{id: 3, name: "Clerc"},
-    %{id: 4, name: "Druide"},
-    %{id: 5, name: "Guerrier"},
-    %{id: 6, name: "Moine"},
-    %{id: 7, name: "Paladin"},
-    %{id: 8, name: "Rôdeur"},
-    %{id: 9, name: "Roublard"},
-    %{id: 10, name: "Ensorceleur"},
-    %{id: 11, name: "Magicien"},
-    %{id: 12, name: "Occultiste"}
-  ]
-
   @backgrounds [
     %{id: 1, name: "Acolyte"},
     %{id: 2, name: "Charlatan"},
@@ -93,44 +78,22 @@ defmodule GameHub.Bg3.Reference do
     %{id: 31, race_id: 10, name: "Githyanki mystique"}
   ]
 
-  @subclasses [
-    %{id: 1, class_id: 1, name: "Berserker"},
-    %{id: 2, class_id: 1, name: "Totem"},
-    %{id: 3, class_id: 1, name: "Path of the Ancestral Guardian"},
-    %{id: 4, class_id: 2, name: "College of Lore"},
-    %{id: 5, class_id: 2, name: "College of Valor"},
-    %{id: 6, class_id: 2, name: "Glamour"},
-    %{id: 7, class_id: 3, name: "Vie"},
-    %{id: 8, class_id: 3, name: "Connaissance"},
-    %{id: 9, class_id: 3, name: "Guerre"},
-    %{id: 10, class_id: 3, name: "Nature"},
-    %{id: 11, class_id: 4, name: "Cercle de la Terre"},
-    %{id: 12, class_id: 4, name: "Cercle du Feu"},
-    %{id: 13, class_id: 4, name: "Cercle de la Lune"},
-    %{id: 14, class_id: 5, name: "Champion"},
-    %{id: 15, class_id: 5, name: "Battle Master"},
-    %{id: 16, class_id: 5, name: "Gilded Defense"},
-    %{id: 17, class_id: 6, name: "Voie de la Main Ouverte"},
-    %{id: 18, class_id: 6, name: "Voie de la Tempête"},
-    %{id: 19, class_id: 6, name: "Voie de la Mère Terre"},
-    %{id: 20, class_id: 7, name: "Vengeance"},
-    %{id: 21, class_id: 7, name: "Ancien"},
-    %{id: 22, class_id: 7, name: "Dévotion"},
-    %{id: 23, class_id: 8, name: "Golem Hunter"},
-    %{id: 24, class_id: 8, name: "Hunt"},
-    %{id: 25, class_id: 8, name: "Beast Master"},
-    %{id: 26, class_id: 9, name: "Phantom"},
-    %{id: 27, class_id: 9, name: "Thief"},
-    %{id: 28, class_id: 9, name: "Assassin"},
-    %{id: 29, class_id: 10, name: "Draconic Bloodline"},
-    %{id: 30, class_id: 10, name: "Wild Magic"},
-    %{id: 31, class_id: 11, name: "École d'Abjuration"},
-    %{id: 32, class_id: 11, name: "École d'Enchantment"},
-    %{id: 33, class_id: 11, name: "École d'Invocation"},
-    %{id: 34, class_id: 12, name: "Le Pacte du Diable"},
-    %{id: 35, class_id: 12, name: "Le Pacte de la Faucheuse"},
-    %{id: 36, class_id: 12, name: "Le Pacte du Ciel"}
-  ]
+  # Les passifs ne sont pas encore en base : leur `class_id` est une clé interne
+  # rattachée au nom de la classe en base.
+  @passive_class_keys %{
+    "Barbarian" => 1,
+    "Bard" => 2,
+    "Cleric" => 3,
+    "Druid" => 4,
+    "Fighter" => 5,
+    "Monk" => 6,
+    "Paladin" => 7,
+    "Ranger" => 8,
+    "Rogue" => 9,
+    "Sorcerer" => 10,
+    "Wizard" => 11,
+    "Warlock" => 12
+  }
 
   @class_passives [
     %{id: 1, class_id: 1, name: "Rage renforcée"},
@@ -184,36 +147,34 @@ defmodule GameHub.Bg3.Reference do
   ]
 
   def races, do: @races
-  def classes, do: @classes
   def backgrounds, do: @backgrounds
   def alignments, do: @alignments
 
   def subraces_for(nil), do: []
   def subraces_for(race_id), do: Enum.filter(@subraces, &(&1.race_id == race_id))
 
-  def subclasses_for(nil), do: []
-  def subclasses_for(class_id), do: Enum.filter(@subclasses, &(&1.class_id == class_id))
+  @doc """
+  Passifs de classe (données statiques) pour une classe identifiée par son nom
+  en base (ex. "Barbarian"). Liste vide si la classe n'a pas de passifs connus.
+  """
+  def class_passives_for(class_name) when is_binary(class_name) do
+    case Map.fetch(@passive_class_keys, class_name) do
+      {:ok, key} -> Enum.filter(@class_passives, &(&1.class_id == key))
+      :error -> []
+    end
+  end
 
-  def class_passives_for(nil), do: []
-  def class_passives_for(class_id), do: Enum.filter(@class_passives, &(&1.class_id == class_id))
+  def class_passives_for(_class_name), do: []
 
   def get_race(id), do: Enum.find(@races, &(&1.id == id))
-  def get_class(id), do: Enum.find(@classes, &(&1.id == id))
   def get_subrace(id), do: Enum.find(@subraces, &(&1.id == id))
-  def get_subclass(id), do: Enum.find(@subclasses, &(&1.id == id))
   def get_class_passive(id), do: Enum.find(@class_passives, &(&1.id == id))
 
   def race_name(nil), do: nil
   def race_name(id), do: get_race(id) && get_race(id).name
 
-  def class_name(nil), do: nil
-  def class_name(id), do: get_class(id) && get_class(id).name
-
   def subrace_name(nil), do: nil
   def subrace_name(id), do: get_subrace(id) && get_subrace(id).name
-
-  def subclass_name(nil), do: nil
-  def subclass_name(id), do: get_subclass(id) && get_subclass(id).name
 
   def class_passive_name(nil), do: nil
   def class_passive_name(id), do: get_class_passive(id) && get_class_passive(id).name

@@ -1,13 +1,14 @@
 defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
   use Phoenix.Component
 
+  alias GameHub.Bg3.ClassCatalog
   alias GameHub.Bg3.Leveling
-  alias GameHub.Bg3.Reference
 
   attr :levels, :list, required: true
   attr :progression, :list, required: true
   attr :progression_errors, :list, required: true
   attr :max_level, :integer, required: true
+  attr :catalog, ClassCatalog, required: true
 
   def level_progression(assigns) do
     ~H"""
@@ -66,7 +67,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
           <div :if={entry.class_level} class="flex flex-row items-center justify-between w-full mb-3">
             <div class="text-sm text-zinc-400">
               Niveau <strong class="text-white">{entry.class_level}</strong>
-              en {Reference.class_name(entry.class_id)}
+              en {ClassCatalog.class_name(@catalog, entry.class_id)}
             </div>
           </div>
 
@@ -87,7 +88,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
               >
                 <option value="" selected={is_nil(entry.class_id)}>— Choisir —</option>
                 <option
-                  :for={class <- Reference.classes()}
+                  :for={class <- ClassCatalog.classes(@catalog)}
                   value={class.id}
                   selected={entry.class_id == class.id}
                 >
@@ -112,7 +113,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
               >
                 <option value="" selected={is_nil(entry.subclass_id)}>— Choisir —</option>
                 <option
-                  :for={subclass <- Reference.subclasses_for(entry.class_id)}
+                  :for={subclass <- ClassCatalog.sub_classes_for(@catalog, entry.class_id)}
                   value={subclass.id}
                   selected={entry.subclass_id == subclass.id}
                 >
@@ -124,7 +125,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
 
           <div :if={entry.feat_slot?} class="mt-3 border-t border-zinc-800 pt-3">
             <label class="mb-1 block text-xs uppercase tracking-wide text-amber-400">
-              🏅 Don (niveau {entry.class_level} en {Reference.class_name(entry.class_id)})
+              🏅 Don (niveau {entry.class_level} en {ClassCatalog.class_name(@catalog, entry.class_id)})
             </label>
 
             <input
@@ -145,7 +146,8 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
                 </p>
 
                 <p class="mt-1 text-xs text-zinc-500">
-                  Choisissez 2 passifs pour le niveau {entry.class_level} de {Reference.class_name(
+                  Choisissez 2 passifs pour le niveau {entry.class_level} de {ClassCatalog.class_name(
+                    @catalog,
                     entry.class_id
                   )}.
                 </p>
@@ -158,7 +160,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
 
             <div class="grid gap-2 sm:grid-cols-2">
               <label
-                :for={class_passive <- Reference.class_passives_for(entry.class_id)}
+                :for={class_passive <- ClassCatalog.class_passives_for(@catalog, entry.class_id)}
                 class={[
                   "flex items-center gap-3 rounded-lg border px-3 py-2 transition",
                   class_passive.id in (entry.class_passive_ids || []) &&

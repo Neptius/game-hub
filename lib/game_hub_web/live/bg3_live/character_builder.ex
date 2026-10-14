@@ -41,9 +41,7 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
      |> assign(:bonus_secondary, bonus_secondary)
      |> assign(:remaining_points, remaining_points(base_scores))
      |> assign(:stat_fields, @stat_fields)
-     |> assign(:levels, [Leveling.new_level(1)])
-     |> assign(:progression, Leveling.compute([Leveling.new_level(1)]))
-     |> assign(:progression_errors, [])
+     |> assign_progression_defaults()
      |> recompute_form()}
   end
 
@@ -60,9 +58,7 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
      |> assign(:bonus_secondary, nil)
      |> assign(:remaining_points, @total_points)
      |> assign(:stat_fields, @stat_fields)
-     |> assign(:levels, [Leveling.new_level(1)])
-     |> assign(:progression, Leveling.compute([Leveling.new_level(1)]))
-     |> assign(:progression_errors, [])
+     |> assign_progression_defaults()
      |> recompute_form()}
   end
 
@@ -276,7 +272,14 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
     level_number = String.to_integer(level)
     class_passive_id = String.to_integer(class_passive_id)
 
-    levels = Leveling.toggle_class_passive(socket.assigns.levels, level_number, class_passive_id)
+    levels =
+      Leveling.toggle_class_passive(
+        socket.assigns.levels,
+        level_number,
+        class_passive_id,
+        socket.assigns.catalog
+      )
+
     {:noreply, recompute_progression(socket, levels)}
   end
 
@@ -284,28 +287,33 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
     params |> Map.to_list() |> List.first()
   end
 
+  defp assign_progression_defaults(socket) do
+    levels = [Leveling.new_level(1)]
+
+    socket
+    |> assign(:catalog, Bg3.class_catalog())
+    |> assign(:levels, levels)
+    |> assign(:progression, Leveling.compute(levels))
+    |> assign(:progression_errors, [])
+  end
+
   defp recompute_progression(socket, levels) do
     socket
     |> assign(:levels, levels)
     |> assign(:progression, Leveling.compute(levels))
-    |> assign(:progression_errors, Leveling.validate(levels))
+    |> assign(:progression_errors, Leveling.validate(levels, socket.assigns.catalog))
   end
 
   @impl true
   def render(assigns) do
     selected_race = form_value(assigns.form, :race)
-    selected_class = form_value(assigns.form, :class)
     subraces = Reference.subraces_for(selected_race) |> to_select_options()
-    subclasses = Reference.subclasses_for(selected_class) |> to_select_options()
 
     assigns =
       assigns
       |> assign(:selected_race, selected_race)
-      |> assign(:selected_class, selected_class)
       |> assign(:subraces, subraces)
-      |> assign(:subclasses, subclasses)
       |> assign(:race_options, to_select_options(Reference.races()))
-      |> assign(:class_options, to_select_options(Reference.classes()))
       |> assign(:background_options, to_select_options(Reference.backgrounds()))
       |> assign(:alignment_options, to_select_options(Reference.alignments()))
       |> assign(:stat_fields, @stat_fields)
@@ -373,6 +381,7 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
             progression={@progression}
             progression_errors={@progression_errors}
             max_level={Leveling.max_level()}
+            catalog={@catalog}
           />
 
           <.ability_scores
@@ -404,6 +413,7 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
         <aside class="lg:sticky lg:top-4 lg:self-start">
           <.character_summary
             progression={@progression}
+            catalog={@catalog}
             base_scores={@base_scores}
             bonus_primary={@bonus_primary}
             bonus_secondary={@bonus_secondary}

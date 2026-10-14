@@ -1,5 +1,5 @@
 defmodule GameHub.Bg3.Leveling do
-  alias GameHub.Bg3.Reference
+  alias GameHub.Bg3.ClassCatalog
 
   @max_level 12
   @feat_interval 4
@@ -84,7 +84,7 @@ defmodule GameHub.Bg3.Leveling do
     end)
   end
 
-  def validate(levels) do
+  def validate(levels, catalog) do
     levels
     |> Enum.filter(& &1.class_id)
     |> Enum.group_by(& &1.class_id, & &1.subclass_id)
@@ -92,7 +92,7 @@ defmodule GameHub.Bg3.Leveling do
       distinct = subclass_ids |> Enum.reject(&is_nil/1) |> Enum.uniq()
 
       if length(distinct) > 1 do
-        class_name = Reference.class_name(class_id)
+        class_name = ClassCatalog.class_name(catalog, class_id)
 
         [
           "La classe #{class_name} ne peut pas avoir plusieurs sous-classes"
@@ -159,7 +159,7 @@ defmodule GameHub.Bg3.Leveling do
     end)
   end
 
-  def toggle_class_passive(levels, level_number, class_passive_id) do
+  def toggle_class_passive(levels, level_number, class_passive_id, catalog) do
     computed_levels = compute(levels)
 
     case Enum.find(computed_levels, &(&1.level == level_number)) do
@@ -171,7 +171,7 @@ defmodule GameHub.Bg3.Leveling do
 
       %{class_id: class_id, class_passive_ids: selected_ids} ->
         available_ids =
-          Reference.class_passives_for(class_id) |> Enum.map(& &1.id)
+          ClassCatalog.class_passives_for(catalog, class_id) |> Enum.map(& &1.id)
 
         selected_ids = selected_ids || []
 

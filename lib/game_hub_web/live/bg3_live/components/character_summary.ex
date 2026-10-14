@@ -6,25 +6,23 @@ defmodule GameHubWeb.Bg3Live.Components.CharacterSummary do
 
   use Phoenix.Component
 
-  alias GameHub.Bg3.Reference
-
-  @base_hp 36
-  @hp_per_level 6
+  alias GameHub.Bg3.ClassCatalog
 
   attr :progression, :list, required: true
+  attr :catalog, ClassCatalog, required: true
   attr :base_scores, :map, required: true
   attr :bonus_primary, :atom, default: nil
   attr :bonus_secondary, :atom, default: nil
 
   def character_summary(assigns) do
     max_level = length(assigns.progression)
-    class_levels = class_level_counts(assigns.progression)
+    class_levels = class_level_counts(assigns.progression, assigns.catalog)
 
     constitution = final_score(assigns, :constitution)
     dexterity = final_score(assigns, :dexterity)
     wisdom = final_score(assigns, :wisdom)
 
-    hp = compute_hp(max_level, constitution)
+    hp = compute_hp(assigns.progression, assigns.catalog, constitution)
     initiative = ability_modifier(dexterity) + ability_modifier(wisdom)
 
     assigns =
@@ -87,7 +85,7 @@ defmodule GameHubWeb.Bg3Live.Components.CharacterSummary do
     """
   end
 
-  defp class_level_counts(progression) do
+  defp class_level_counts(progression, catalog) do
     progression
     |> Enum.filter(& &1.class_id)
     |> Enum.reduce(%{}, fn %{class_id: class_id, subclass_id: subclass_id}, acc ->
@@ -106,20 +104,28 @@ defmodule GameHubWeb.Bg3Live.Components.CharacterSummary do
     end)
     |> Enum.map(fn {class_id, summary} ->
       %{
-        class: Reference.class_name(class_id),
+        class: ClassCatalog.class_name(catalog, class_id),
         level: summary.level,
-        subclass: Reference.subclass_name(summary.subclass_id)
+        subclass: ClassCatalog.sub_class_name(catalog, summary.subclass_id)
       }
     end)
     |> Enum.sort_by(& &1.level, :desc)
   end
 
-  defp compute_hp(0, _constitution), do: 0
-
-  defp compute_hp(max_level, constitution) do
+  # Le premier niveau du personnage donne les PV de base de sa classe ; les
+  # suivants, les PV par niveau de leur classe. Chaque niveau ajoute le modificateur de CON.
+  defp compute_hp(progression, catalog, constitution) do
     con_modifier = ability_modifier(constitution)
 
-    @base_hp + (max_level - 1) * @hp_per_level + max_level * con_modifier
+    progression
+    |> Enum.with_index()
+    |> Enum.reduce(0, fn
+      {%{class_id: nil}, _index}, hp ->
+        hp
+
+      {%{class_id: class_id}, index}, hp ->
+        hp + ClassCatalog.hp_gain(catalog, class_id, index == 0) + con_modifier
+    end)
   end
 
   defp final_score(assigns, stat) do

@@ -5,8 +5,26 @@ defmodule GameHub.Bg3 do
 
   import Ecto.Query, warn: false
 
-  alias GameHub.Bg3.Character
+  alias GameHub.Bg3.{Character, ClassCatalog}
+  alias GameHub.BG3.{Classe, SubClasse}
   alias GameHub.Repo
+
+  @doc """
+  Returns all classes (ordered by name) with their sub-classes preloaded.
+  """
+  def list_classes do
+    sub_classes = from(sc in SubClasse, order_by: sc.name)
+
+    Classe
+    |> order_by([c], c.name)
+    |> preload(sub_classes: ^sub_classes)
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns an in-memory catalog of classes and sub-classes.
+  """
+  def class_catalog, do: ClassCatalog.new(list_classes())
 
   @doc """
   Returns all saved characters.
