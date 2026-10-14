@@ -38,7 +38,8 @@ defmodule GameHub.BG3.Importer.ClasseImporter do
         |> Enum.map(&create_record(&1, localizations))
         |> organize_records()
 
-      classe = upsert_classe_records(classe_records)
+      upsert_classe_records(classe_records)
+      upsert_sub_classe_records(sub_classes_records)
     end)
   end
 
@@ -114,7 +115,7 @@ defmodule GameHub.BG3.Importer.ClasseImporter do
 
   defp create_record(%{"ParentGuid" => _} = raw, localizations) do
     %{
-      internal_id: raw["Name"],
+      internal_id: raw["UUID"],
       name: resolve_localization(raw["DisplayName"], localizations),
       name_uid: raw["DisplayName"],
       description: parse_description(raw["Description"], localizations),
@@ -126,7 +127,7 @@ defmodule GameHub.BG3.Importer.ClasseImporter do
 
   defp create_record(raw, localizations) do
     %{
-      internal_id: raw["Name"],
+      internal_id: raw["UUID"],
       name: resolve_localization(raw["DisplayName"], localizations),
       name_uid: raw["DisplayName"],
       description: parse_description(raw["Description"], localizations),
@@ -149,7 +150,40 @@ defmodule GameHub.BG3.Importer.ClasseImporter do
   defp upsert_classe_records([]), do: {0, nil}
 
   defp upsert_classe_records(classe_records) do
+    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+
+    classe_records =
+      Enum.map(classe_records, fn classe ->
+        classe
+        |> Map.put(:inserted_at, now)
+        |> Map.put(:updated_at, now)
+      end)
+
     Repo.insert_all(Classe, classe_records,
+      on_conflict: {:replace_all_except, [:id, :inserted_at]},
+      conflict_target: [:internal_id]
+    )
+  end
+
+  defp upsert_sub_classe_records([]), do: {0, nil}
+
+  defp upsert_sub_classe_records(sub_classe_records) do
+    classes = Repo.all(Classe)
+
+    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+
+    sub_classe_records =
+      Enum.map(sub_classe_records, fn sub_classe ->
+        sub_classe
+        |> Map.put(:inserted_at, now)
+        |> Map.put(:updated_at, now)
+        |> Map.put(
+          :classe_id,
+          classes |> Enum.find(fn c -> c.internal_id == sub_classe.classe_uid end) |> Map.get(:id)
+        )
+      end)
+
+    Repo.insert_all(SubClasse, sub_classe_records,
       on_conflict: {:replace_all_except, [:id, :inserted_at]},
       conflict_target: [:internal_id]
     )

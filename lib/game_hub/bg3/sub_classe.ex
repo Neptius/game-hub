@@ -4,7 +4,7 @@ defmodule GameHub.BG3.SubClasse do
 
   alias GameHub.BG3.Classe
 
-  schema "sub_classes" do
+  schema "bg3_sub_classes" do
     field :internal_id, :string
     field :name, :string
     field :name_uid, :string
