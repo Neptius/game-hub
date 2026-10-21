@@ -328,6 +328,7 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
           phx-submit="save"
           class="space-y-4"
         >
+        <div class="grid grid-cols-2 space-x-4">
           <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
             <div class="mb-3 flex items-center justify-between">
               <h2 class="text-lg font-semibold text-white">Identité & origine</h2>
@@ -343,7 +344,7 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
               --%>
             </div>
 
-            <div class="grid gap-x-4 gap-y-3 md:grid-cols-2">
+            <div class="grid gap-x-4 gap-y-3">
               <.input
                 field={@form[:name]}
                 type="text"
@@ -356,9 +357,6 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
                 label="Alignement"
                 options={@alignment_options}
               />
-            </div>
-
-            <div class="mt-3 grid gap-x-4 gap-y-3 md:grid-cols-2">
               <.input field={@form[:race]} type="select" label="Race" options={@race_options} />
               <.input
                 field={@form[:subrace]}
@@ -376,13 +374,7 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
             </div>
           </div>
 
-          <.level_progression
-            levels={@levels}
-            progression={@progression}
-            progression_errors={@progression_errors}
-            max_level={Leveling.max_level()}
-            catalog={@catalog}
-          />
+
 
           <.ability_scores
             stat_fields={@stat_fields}
@@ -393,6 +385,15 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
             total_points={27}
             min_stat={8}
             max_stat={15}
+          />
+        </div>
+
+          <.level_progression
+            levels={@levels}
+            progression={@progression}
+            progression_errors={@progression_errors}
+            max_level={Leveling.max_level()}
+            catalog={@catalog}
           />
 
           <div class="flex justify-end gap-3">

@@ -38,3 +38,7 @@ npm-debug.log
 /uploads/
 
 *.secret.exs
+
+# Dialyzer PLT files
+/priv/plts/*.plt
+/priv/plts/*.plt.hash

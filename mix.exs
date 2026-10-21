@@ -73,11 +73,14 @@ defmodule GameHub.MixProject do
       {:gettext, "~> 1.0"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"},
+      {:bandit, "~> 1.13"},
       {:oban, "~> 2.24"},
       {:igniter, "~> 0.5", only: [:dev]},
       {:nimble_lz4, "~> 1.2"},
-      {:sweet_xml, "~> 0.7.5"}
+      {:sweet_xml, "~> 0.7.5"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:sobelow, "~> 0.14", only: [:dev, :test], runtime: false, warn_if_outdated: true}
     ]
   end
 

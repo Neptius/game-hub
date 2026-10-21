@@ -19,7 +19,5 @@ defmodule Mix.Tasks.Bg3.ImportReferences do
     }
 
     result = GameHub.Bg3.Importer.import_all!(paths)
-
-    IO.inspect(result, label: "Import terminé")
   end
 end

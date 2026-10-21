@@ -71,75 +71,75 @@ defmodule GameHubWeb.Bg3Live.Show do
 
           <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6">
             <h2 class="mb-4 text-xl font-semibold text-white">Caractéristiques</h2>
-            <dl class="grid grid-cols-2 gap-4 text-sm text-zinc-300">
-              <div class="rounded-xl bg-zinc-950/60 p-3">
+            <dl class="grid grid-cols-1 gap-1.5 text-sm text-zinc-300">
+              <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/60 px-3 py-1.5">
                 <dt class="text-zinc-500">Force</dt>
-                <dd class="mt-1 flex items-baseline gap-2">
-                  <span class="text-lg font-semibold text-white">
+                <dd class="flex items-baseline gap-2">
+                  <span class="font-semibold text-white">
                     {@character.strength}
                   </span>
 
-                  <span class="text-sm font-bold text-amber-400">
+                  <span class="text-xs font-bold text-amber-400">
                     {ability_modifier_label(@character.strength)}
                   </span>
                 </dd>
               </div>
-              <div class="rounded-xl bg-zinc-950/60 p-3">
+              <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/60 px-3 py-1.5">
                 <dt class="text-zinc-500">Dextérité</dt>
-                <dd class="mt-1 flex items-baseline gap-2">
-                  <span class="text-lg font-semibold text-white">
+                <dd class="flex items-baseline gap-2">
+                  <span class="font-semibold text-white">
                     {@character.dexterity}
                   </span>
 
-                  <span class="text-sm font-bold text-amber-400">
+                  <span class="text-xs font-bold text-amber-400">
                     {ability_modifier_label(@character.dexterity)}
                   </span>
                 </dd>
               </div>
-              <div class="rounded-xl bg-zinc-950/60 p-3">
+              <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/60 px-3 py-1.5">
                 <dt class="text-zinc-500">Constitution</dt>
-                <dd class="mt-1 flex items-baseline gap-2">
-                  <span class="text-lg font-semibold text-white">
+                <dd class="flex items-baseline gap-2">
+                  <span class="font-semibold text-white">
                     {@character.constitution}
                   </span>
 
-                  <span class="text-sm font-bold text-amber-400">
+                  <span class="text-xs font-bold text-amber-400">
                     {ability_modifier_label(@character.constitution)}
                   </span>
                 </dd>
               </div>
-              <div class="rounded-xl bg-zinc-950/60 p-3">
+              <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/60 px-3 py-1.5">
                 <dt class="text-zinc-500">Intelligence</dt>
-                <dd class="mt-1 flex items-baseline gap-2">
-                  <span class="text-lg font-semibold text-white">
+                <dd class="flex items-baseline gap-2">
+                  <span class="font-semibold text-white">
                     {@character.intelligence}
                   </span>
 
-                  <span class="text-sm font-bold text-amber-400">
+                  <span class="text-xs font-bold text-amber-400">
                     {ability_modifier_label(@character.intelligence)}
                   </span>
                 </dd>
               </div>
-              <div class="rounded-xl bg-zinc-950/60 p-3">
+              <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/60 px-3 py-1.5">
                 <dt class="text-zinc-500">Sagesse</dt>
-                <dd class="mt-1 flex items-baseline gap-2">
-                  <span class="text-lg font-semibold text-white">
+                <dd class="flex items-baseline gap-2">
+                  <span class="font-semibold text-white">
                     {@character.wisdom}
                   </span>
 
-                  <span class="text-sm font-bold text-amber-400">
+                  <span class="text-xs font-bold text-amber-400">
                     {ability_modifier_label(@character.wisdom)}
                   </span>
                 </dd>
               </div>
-              <div class="rounded-xl bg-zinc-950/60 p-3">
+              <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/60 px-3 py-1.5">
                 <dt class="text-zinc-500">Charisme</dt>
-                <dd class="mt-1 flex items-baseline gap-2">
-                  <span class="text-lg font-semibold text-white">
+                <dd class="flex items-baseline gap-2">
+                  <span class="font-semibold text-white">
                     {@character.charisma}
                   </span>
 
-                  <span class="text-sm font-bold text-amber-400">
+                  <span class="text-xs font-bold text-amber-400">
                     {ability_modifier_label(@character.charisma)}
                   </span>
                 </dd>

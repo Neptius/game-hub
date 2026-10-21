@@ -21,35 +21,31 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
       <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 class="text-lg font-semibold text-white">Caractéristiques</h2>
-          <p class="mt-1 text-xs text-zinc-400">
-            Répartissez vos {@total_points} points entre les six caractéristiques.
-          </p>
         </div>
 
         <div class="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm font-medium text-amber-300">
-          Points restants : <span class="font-bold">{@remaining_points}</span>
+          <span class="font-bold">{@remaining_points}</span>
           <span class="text-amber-400/70">/ {@total_points}</span>
         </div>
       </div>
 
-      <div class="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
+      <div class="grid grid-cols-1 gap-1.5">
         <div
           :for={stat <- @stat_fields}
           id={"stat-#{stat}"}
-          class="rounded-xl border border-zinc-700 bg-zinc-950/60 p-3 transition hover:border-zinc-500"
+          class="rounded-lg border border-zinc-700 bg-zinc-950/60 px-2 py-1.5 transition hover:border-zinc-500"
         >
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div class="min-w-0">
-              <p class="font-semibold text-white flex flex-row items-center justify-between gap-2">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex w-20 items-baseline gap-2">
+              <p class="font-semibold text-white">
                 {stat_label(stat)}
-
-                <span class="text-sm font-bold text-amber-400">
-                  {ability_modifier_label(final_score(assigns, stat))}
-                </span>
               </p>
+              <span class="text-xs font-bold text-amber-400">
+                {ability_modifier_label(final_score(assigns, stat))}
+              </span>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex shrink-0 items-center gap-1.5">
               <button
                 type="button"
                 id={"decrement-#{stat}"}
@@ -57,13 +53,13 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
                 phx-value-stat={stat}
                 disabled={@base_scores[stat] <= @min_stat}
                 aria-label={"Diminuer #{stat_label(stat)}"}
-                class="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-600 text-lg text-zinc-200 transition hover:border-amber-400 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-30"
+                class="flex h-7 w-7 items-center justify-center rounded-md border border-zinc-600 text-base text-zinc-200 transition hover:border-amber-400 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-30"
               >
                 −
               </button>
 
-              <div class="flex items-baseline gap-2 rounded-lg bg-zinc-900 px-2 py-1.5">
-                <span class="text-xl font-bold text-white">
+              <div class="rounded-md bg-zinc-900 px-2 py-1">
+                <span class="text-base font-bold text-white">
                   {final_score(assigns, stat)}
                 </span>
               </div>
@@ -78,10 +74,48 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
                     @remaining_points < step_cost(@base_scores[stat], :up)
                 }
                 aria-label={"Augmenter #{stat_label(stat)}"}
-                class="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-600 text-lg text-zinc-200 transition hover:border-amber-400 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-30"
+                class="flex h-7 w-7 items-center justify-center rounded-md border border-zinc-600 text-base text-zinc-200 transition hover:border-amber-400 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-30"
               >
                 +
               </button>
+            </div>
+
+            <div class="flex shrink-0 items-center gap-1">
+              <label class="flex cursor-pointer items-center gap-1 rounded-md border border-zinc-800 px-1.5 py-1 transition hover:border-amber-500/50">
+                <input
+                  type="checkbox"
+                  id={"bonus-primary-#{stat}"}
+                  checked={@bonus_primary == stat}
+                  phx-click="toggle_bonus"
+                  phx-value-bonus="primary"
+                  phx-value-stat={stat}
+                  aria-label={"Bonus +3 à #{stat_label(stat)}"}
+                  class="h-3.5 w-3.5 rounded border-zinc-600 bg-zinc-900 text-amber-500 focus:ring-amber-500"
+                />
+                <span class="text-[11px] text-amber-400">+3</span>
+              </label>
+
+              <label class={[
+                "flex items-center gap-1 rounded-md border border-zinc-800 px-1.5 py-1 transition",
+                if(
+                  @bonus_primary == stat,
+                  do: "cursor-not-allowed opacity-40",
+                  else: "cursor-pointer hover:border-emerald-500/50"
+                )
+              ]}>
+                <input
+                  type="checkbox"
+                  id={"bonus-secondary-#{stat}"}
+                  checked={@bonus_secondary == stat}
+                  disabled={@bonus_primary == stat}
+                  phx-click="toggle_bonus"
+                  phx-value-bonus="secondary"
+                  phx-value-stat={stat}
+                  aria-label={"Bonus +1 à #{stat_label(stat)}"}
+                  class="h-3.5 w-3.5 rounded border-zinc-600 bg-zinc-900 text-emerald-500 focus:ring-emerald-500 disabled:cursor-not-allowed"
+                />
+                <span class="text-[11px] text-emerald-400">+1</span>
+              </label>
             </div>
 
             <input
@@ -90,59 +124,7 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
               value={final_score(assigns, stat)}
             />
           </div>
-
-          <div class="mt-3 grid gap-2 border-t border-zinc-800 pt-3 sm:grid-cols-2">
-            <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-800 px-2 py-1.5 transition hover:border-amber-500/50">
-              <input
-                type="checkbox"
-                id={"bonus-primary-#{stat}"}
-                checked={@bonus_primary == stat}
-                phx-click="toggle_bonus"
-                phx-value-bonus="primary"
-                phx-value-stat={stat}
-                class="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-amber-500 focus:ring-amber-500"
-              />
-
-              <span class="text-xs text-zinc-300">
-                <strong class="text-amber-400">+3</strong>
-              </span>
-            </label>
-
-            <label class={[
-              "flex items-center gap-2 rounded-lg border border-zinc-800 px-2 py-1.5 transition",
-              if(
-                @bonus_primary == stat,
-                do: "cursor-not-allowed opacity-40",
-                else: "cursor-pointer hover:border-emerald-500/50"
-              )
-            ]}>
-              <input
-                type="checkbox"
-                id={"bonus-secondary-#{stat}"}
-                checked={@bonus_secondary == stat}
-                disabled={@bonus_primary == stat}
-                phx-click="toggle_bonus"
-                phx-value-bonus="secondary"
-                phx-value-stat={stat}
-                class="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-emerald-500 focus:ring-emerald-500 disabled:cursor-not-allowed"
-              />
-
-              <span class="text-xs text-zinc-300">
-                <strong class="text-emerald-400">+1</strong>
-              </span>
-            </label>
-          </div>
         </div>
-      </div>
-
-      <div class="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/40 p-3 text-xs text-zinc-400">
-        <p>
-          Les valeurs de base vont de <strong class="text-zinc-200">{@min_stat} à {@max_stat}</strong>.
-        </p>
-        <p class="mt-1">
-          Une caractéristique peut atteindre <strong class="text-zinc-200">{@max_stat + 3}</strong>
-          grâce au bonus de +3.
-        </p>
       </div>
     </div>
     """
