@@ -18,6 +18,6 @@ defmodule Mix.Tasks.Bg3.ImportReferences do
         "./uploads/BG3/Mods/HomeBrew-extracted/Mods/HomeBrew - Comprehensive Reworks/Localization/English/Classes Reworked (General).xml"
     }
 
-    result = GameHub.Bg3.Importer.import_all!(paths)
+    GameHub.Bg3.Importer.import_all!(paths)
   end
 end
