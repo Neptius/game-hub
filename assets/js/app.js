@@ -34,6 +34,13 @@ const liveSocket = new LiveSocket("/live", Socket, {
 
 // Show progress bar on live navigation and form submits
 topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
+window.addEventListener("phx:toggle-sidebar", () => {
+  const root = document.documentElement
+  const collapsed = root.getAttribute("data-sidebar") !== "collapsed"
+  root.setAttribute("data-sidebar", collapsed ? "collapsed" : "expanded")
+  localStorage.setItem("phx:sidebar", collapsed ? "collapsed" : "expanded")
+})
+
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 

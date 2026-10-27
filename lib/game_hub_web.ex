@@ -86,6 +86,7 @@ defmodule GameHubWeb do
       import Phoenix.HTML
       # Core UI components
       import GameHubWeb.CoreComponents
+      import GameHubWeb.GameComponents
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS

@@ -15,6 +15,17 @@ config :game_hub, Oban,
   pruner: [max_age: {1, :day}],
   repo: GameHub.Repo
 
+# Icons are referenced as "provider:icon". Dynamic references (e.g. in
+# GameHub.Games) are listed under `download` so they are always bundled.
+config :phx_icons,
+  providers: %{
+    "lucide" =>
+      {PhxIcons.Providers.Lucide, "0.469.0",
+       download:
+         {:also,
+          ~w(sword swords shield users book-open backpack castle dices trophy wand-sparkles scroll-text)}}
+  }
+
 config :game_hub, :scopes,
   user: [
     default: true,

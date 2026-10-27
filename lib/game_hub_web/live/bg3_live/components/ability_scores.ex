@@ -17,15 +17,15 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
 
   def ability_scores(assigns) do
     ~H"""
-    <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+    <div class="hud-panel p-4">
       <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 class="text-lg font-semibold text-white">Caractéristiques</h2>
+          <h2 class="hud-mono text-sm font-bold text-white">Caractéristiques</h2>
         </div>
 
-        <div class="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm font-medium text-amber-300">
+        <div class="hud-mono hud-tag px-3 py-2 text-xs font-medium">
           <span class="font-bold">{@remaining_points}</span>
-          <span class="text-amber-400/70">/ {@total_points}</span>
+          <span class="text-(--accent)/70">/ {@total_points}</span>
         </div>
       </div>
 
@@ -33,14 +33,14 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
         <div
           :for={stat <- @stat_fields}
           id={"stat-#{stat}"}
-          class="rounded-lg border border-zinc-700 bg-zinc-950/60 px-2 py-1.5 transition hover:border-zinc-500"
+          class="border border-(--accent)/20 bg-black/40 px-2 py-1.5 transition hover:border-(--accent)"
         >
           <div class="flex items-center justify-between gap-2">
             <div class="flex w-20 items-baseline gap-2">
               <p class="font-semibold text-white">
                 {stat_label(stat)}
               </p>
-              <span class="text-xs font-bold text-amber-400">
+              <span class="text-xs font-bold text-(--accent)">
                 {ability_modifier_label(final_score(assigns, stat))}
               </span>
             </div>
@@ -53,12 +53,12 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
                 phx-value-stat={stat}
                 disabled={@base_scores[stat] <= @min_stat}
                 aria-label={"Diminuer #{stat_label(stat)}"}
-                class="flex h-7 w-7 items-center justify-center rounded-md border border-zinc-600 text-base text-zinc-200 transition hover:border-amber-400 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-30"
+                class="flex h-7 w-7 items-center justify-center border border-(--accent)/40 text-base text-zinc-200 transition hover:bg-(--accent)/15 hover:text-(--accent) disabled:cursor-not-allowed disabled:opacity-30"
               >
                 −
               </button>
 
-              <div class="rounded-md bg-zinc-900 px-2 py-1">
+              <div class="bg-black/50 px-2 py-1">
                 <span class="text-base font-bold text-white">
                   {final_score(assigns, stat)}
                 </span>
@@ -74,14 +74,14 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
                     @remaining_points < step_cost(@base_scores[stat], :up)
                 }
                 aria-label={"Augmenter #{stat_label(stat)}"}
-                class="flex h-7 w-7 items-center justify-center rounded-md border border-zinc-600 text-base text-zinc-200 transition hover:border-amber-400 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-30"
+                class="flex h-7 w-7 items-center justify-center border border-(--accent)/40 text-base text-zinc-200 transition hover:bg-(--accent)/15 hover:text-(--accent) disabled:cursor-not-allowed disabled:opacity-30"
               >
                 +
               </button>
             </div>
 
             <div class="flex shrink-0 items-center gap-1">
-              <label class="flex cursor-pointer items-center gap-1 rounded-md border border-zinc-800 px-1.5 py-1 transition hover:border-amber-500/50">
+              <label class="flex cursor-pointer items-center gap-1 border border-(--accent)/15 px-1.5 py-1 transition hover:border-(--accent)">
                 <input
                   type="checkbox"
                   id={"bonus-primary-#{stat}"}
@@ -90,13 +90,13 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
                   phx-value-bonus="primary"
                   phx-value-stat={stat}
                   aria-label={"Bonus +3 à #{stat_label(stat)}"}
-                  class="h-3.5 w-3.5 rounded border-zinc-600 bg-zinc-900 text-amber-500 focus:ring-amber-500"
+                  class="h-3.5 w-3.5 border-(--accent)/50 bg-black/50 text-(--accent) focus:ring-(--accent)"
                 />
-                <span class="text-[11px] text-amber-400">+3</span>
+                <span class="text-[11px] text-(--accent)">+3</span>
               </label>
 
               <label class={[
-                "flex items-center gap-1 rounded-md border border-zinc-800 px-1.5 py-1 transition",
+                "flex items-center gap-1 border border-(--accent)/15 px-1.5 py-1 transition",
                 if(
                   @bonus_primary == stat,
                   do: "cursor-not-allowed opacity-40",
@@ -112,7 +112,7 @@ defmodule GameHubWeb.Bg3Live.Components.AbilityScores do
                   phx-value-bonus="secondary"
                   phx-value-stat={stat}
                   aria-label={"Bonus +1 à #{stat_label(stat)}"}
-                  class="h-3.5 w-3.5 rounded border-zinc-600 bg-zinc-900 text-emerald-500 focus:ring-emerald-500 disabled:cursor-not-allowed"
+                  class="h-3.5 w-3.5 border-emerald-500/50 bg-black/50 text-emerald-500 focus:ring-emerald-500 disabled:cursor-not-allowed"
                 />
                 <span class="text-[11px] text-emerald-400">+1</span>
               </label>

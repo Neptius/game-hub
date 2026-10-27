@@ -17,12 +17,6 @@ defmodule GameHubWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", GameHubWeb do
-    pipe_through :browser
-
-    get "/", PageController, :home
-  end
-
   # Other scopes may use custom stacks.
   # scope "/api", GameHubWeb do
   #   pipe_through :api
@@ -68,10 +62,15 @@ defmodule GameHubWeb.Router do
       live "/users/log-in", UserLive.Login, :new
       live "/users/log-in/:token", UserLive.Confirmation, :new
 
-      live "/baldurs-gate-3/characters", Bg3Live.Index, :index
-      live "/baldurs-gate-3/characters/new", Bg3Live.CharacterBuilder, :new
-      live "/baldurs-gate-3/characters/:id/edit", Bg3Live.CharacterBuilder, :edit
-      live "/baldurs-gate-3/characters/:id", Bg3Live.Show, :show
+      live "/", HubLive.Index, :index
+
+      live "/bg3", Bg3Live.Dashboard, :index
+      live "/bg3/characters", Bg3Live.Index, :index
+      live "/bg3/characters/new", Bg3Live.CharacterBuilder, :new
+      live "/bg3/characters/:id/edit", Bg3Live.CharacterBuilder, :edit
+      live "/bg3/characters/:id", Bg3Live.Show, :show
+
+      live "/:game", HubLive.Game, :show
     end
 
     post "/users/log-in", UserSessionController, :create

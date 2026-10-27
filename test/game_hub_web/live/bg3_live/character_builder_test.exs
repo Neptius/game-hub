@@ -43,7 +43,7 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilderTest do
     classe: classe,
     sub_classe: sub_classe
   } do
-    {:ok, view, _html} = live(conn, ~p"/baldurs-gate-3/characters/new")
+    {:ok, view, _html} = live(conn, ~p"/bg3/characters/new")
 
     assert has_element?(view, "#level-1 option[value='#{classe.id}']", "Barbarian")
 

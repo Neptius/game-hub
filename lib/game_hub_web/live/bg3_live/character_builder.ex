@@ -107,7 +107,7 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
         {:noreply,
          push_navigate(
            socket,
-           to: ~p"/baldurs-gate-3/characters/#{saved_character.id}"
+           to: ~p"/bg3/characters/#{saved_character.id}"
          )}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -319,107 +319,118 @@ defmodule GameHubWeb.Bg3Live.CharacterBuilder do
       |> assign(:stat_fields, @stat_fields)
 
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto grid max-w-screen-2xl gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <.form
-          for={@form}
-          id="character-form"
-          phx-change="validate"
-          phx-submit="save"
-          class="space-y-4"
-        >
-        <div class="grid grid-cols-2 space-x-4">
-          <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
-            <div class="mb-3 flex items-center justify-between">
-              <h2 class="text-lg font-semibold text-white">Identité & origine</h2>
-              <%!--
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      game={GameHub.Games.get!("bg3")}
+      active={:characters}
+    >
+      <div class="mx-auto max-w-screen-2xl px-4 py-8 sm:px-6">
+        <div class="mb-6">
+          <p class="hud-mono hud-glow text-xs">&gt; character_builder</p>
+          <h1 class="hud-display mt-2 text-4xl sm:text-5xl">
+            {if @character.id, do: "Modifier le build", else: "Nouveau build"}
+          </h1>
+        </div>
+        <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
+          <.form
+            for={@form}
+            id="character-form"
+            phx-change="validate"
+            phx-submit="save"
+            class="space-y-4"
+          >
+            <div class="grid grid-cols-2 space-x-4">
+              <div class="hud-panel p-4">
+                <div class="mb-3 flex items-center justify-between">
+                  <h2 class="hud-mono text-sm font-bold text-white">Identité & origine</h2>
+                  <%!--
                 <button
                   type="button"
                   phx-click="generate_name"
                   phx-value-race={form_value(@form, :race)}
-                  class="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm font-medium text-amber-300 transition hover:bg-amber-500/20"
+                  class="hud-mono border border-(--accent)/50 bg-(--accent)/10 px-3 py-2 text-xs font-medium text-(--accent) transition hover:bg-(--accent)/25"
                 >
                   🎲 Générer un nom
                 </button>
               --%>
+                </div>
+
+                <div class="grid gap-x-4 gap-y-3">
+                  <.input
+                    field={@form[:name]}
+                    type="text"
+                    label="Nom"
+                    placeholder="Ex: Aelrith Moonshadow"
+                  />
+                  <.input
+                    field={@form[:alignment]}
+                    type="select"
+                    label="Alignement"
+                    options={@alignment_options}
+                  />
+                  <.input field={@form[:race]} type="select" label="Race" options={@race_options} />
+                  <.input
+                    field={@form[:subrace]}
+                    type="select"
+                    label="Sous-race"
+                    options={Enum.map(@subraces, &{&1, &1})}
+                  />
+                  <.input
+                    field={@form[:background]}
+                    type="select"
+                    label="Historique"
+                    options={@background_options}
+                  />
+                  <.input field={@form[:notes]} type="textarea" label="Notes" rows={2} />
+                </div>
+              </div>
+              <div>
+                <.ability_scores
+                  stat_fields={@stat_fields}
+                  base_scores={@base_scores}
+                  bonus_primary={@bonus_primary}
+                  bonus_secondary={@bonus_secondary}
+                  remaining_points={@remaining_points}
+                  total_points={27}
+                  min_stat={8}
+                  max_stat={15}
+                />
+                </div>
             </div>
 
-            <div class="grid gap-x-4 gap-y-3">
-              <.input
-                field={@form[:name]}
-                type="text"
-                label="Nom"
-                placeholder="Ex: Aelrith Moonshadow"
-              />
-              <.input
-                field={@form[:alignment]}
-                type="select"
-                label="Alignement"
-                options={@alignment_options}
-              />
-              <.input field={@form[:race]} type="select" label="Race" options={@race_options} />
-              <.input
-                field={@form[:subrace]}
-                type="select"
-                label="Sous-race"
-                options={Enum.map(@subraces, &{&1, &1})}
-              />
-              <.input
-                field={@form[:background]}
-                type="select"
-                label="Historique"
-                options={@background_options}
-              />
-              <.input field={@form[:notes]} type="textarea" label="Notes" rows={2} />
+            <.level_progression
+              levels={@levels}
+              progression={@progression}
+              progression_errors={@progression_errors}
+              max_level={Leveling.max_level()}
+              catalog={@catalog}
+            />
+
+            <div class="flex justify-end gap-3">
+              <.link
+                navigate={~p"/bg3/characters"}
+                class="hud-mono inline-flex items-center border border-(--accent)/40 px-4 py-2 text-xs font-medium text-zinc-200 transition hover:bg-(--accent)/15"
+              >
+                Annuler
+              </.link>
+
+              <.button class="hud-btn hud-mono cursor-pointer">
+                Enregistrer
+              </.button>
             </div>
-          </div>
+          </.form>
 
-
-
-          <.ability_scores
-            stat_fields={@stat_fields}
-            base_scores={@base_scores}
-            bonus_primary={@bonus_primary}
-            bonus_secondary={@bonus_secondary}
-            remaining_points={@remaining_points}
-            total_points={27}
-            min_stat={8}
-            max_stat={15}
-          />
+          <aside class="lg:sticky lg:top-4 lg:self-start">
+            <.character_summary
+              progression={@progression}
+              catalog={@catalog}
+              base_scores={@base_scores}
+              bonus_primary={@bonus_primary}
+              bonus_secondary={@bonus_secondary}
+            />
+          </aside>
         </div>
-
-          <.level_progression
-            levels={@levels}
-            progression={@progression}
-            progression_errors={@progression_errors}
-            max_level={Leveling.max_level()}
-            catalog={@catalog}
-          />
-
-          <div class="flex justify-end gap-3">
-            <.link
-              navigate={~p"/baldurs-gate-3/characters"}
-              class="inline-flex items-center rounded-xl border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-200 transition hover:border-zinc-500"
-            >
-              Annuler
-            </.link>
-
-            <.button
-              class="cursor-pointer inline-flex items-center rounded-xl border border-amber-500 px-4 py-2 text-sm font-medium bg-amber-500 text-zinc-950 hover:bg-amber-400">
-              Enregistrer
-            </.button>
-          </div>
-        </.form>
-
-        <aside class="lg:sticky lg:top-4 lg:self-start">
-          <.character_summary
-            progression={@progression}
-            catalog={@catalog}
-            base_scores={@base_scores}
-            bonus_primary={@bonus_primary}
-            bonus_secondary={@bonus_secondary}
-          />
-        </aside>
       </div>
     </Layouts.app>
     """

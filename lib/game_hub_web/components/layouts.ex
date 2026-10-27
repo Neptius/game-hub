@@ -31,44 +31,178 @@ defmodule GameHubWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://phoenix.hexdocs.pm/scopes.html)"
 
+  attr :game, :any, default: nil, doc: "the `GameHub.Games.Game` currently displayed, if any"
+
+  attr :active, :atom,
+    default: nil,
+    doc: "the id of the active game feature in the sub navigation"
+
   slot :inner_block, required: true
 
   def app(assigns) do
+    assigns =
+      assigns
+      |> assign(:accent, if(assigns.game, do: assigns.game.accent, else: "#22d3ee"))
+      |> assign(:accent_alt, if(assigns.game, do: assigns.game.accent_alt, else: "#7c3aed"))
+
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <img src={~p"/images/logo.svg"} width="36" />
-          <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
-        </a>
+    <div
+      id="app-shell"
+      data-theme="dark"
+      style={"--accent: #{@accent}; --accent-alt: #{@accent_alt};"}
+      class="hud-root min-h-screen text-zinc-100"
+    >
+      <div class="hud-mono sticky top-0 z-30 flex items-center gap-3 border-b border-(--accent)/20 bg-black/60 px-4 py-3 backdrop-blur-md lg:hidden">
+        <button
+          type="button"
+          id="sidebar-open"
+          aria-label="Ouvrir le menu"
+          phx-click={JS.set_attribute({"data-open", "true"}, to: "#sidebar")}
+          class="flex size-9 items-center justify-center border border-(--accent)/40 text-(--accent)"
+        >
+          <.icon name="lucide:menu" class="size-5" />
+        </button>
+        <span class="text-sm font-bold text-white">
+          Game<span class="hud-glow">Hub</span>
+          <span :if={@game} class="hud-glow ml-2">// {@game.short_name}</span>
+        </span>
       </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          <li>
-            <.theme_toggle />
-          </li>
-          <li>
-            <a href="https://phoenix.hexdocs.pm/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </header>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-5xl space-y-4">
+      <div
+        id="sidebar-backdrop"
+        class="hud-side-backdrop"
+        phx-click={JS.remove_attribute("data-open", to: "#sidebar")}
+      />
+
+      <aside id="sidebar" class="hud-side z-40 flex flex-col">
+        <div class="hud-side-head px-5 py-6">
+          <div class="flex items-center justify-between gap-2">
+            <.link
+              navigate={~p"/"}
+              id="nav-hub"
+              class="hud-mono flex items-center gap-2 text-sm font-bold text-white"
+            >
+              <span class="hud-dot"></span>
+              <span class="hud-label">Game<span class="hud-glow">Hub</span></span>
+            </.link>
+            <button
+              type="button"
+              id="sidebar-close"
+              aria-label="Fermer le menu"
+              phx-click={JS.remove_attribute("data-open", to: "#sidebar")}
+              class="text-zinc-400 hover:text-white lg:hidden"
+            >
+              <.icon name="lucide:x" class="size-5" />
+            </button>
+          </div>
+
+          <.link
+            :if={@game}
+            navigate={"/#{@game.slug}"}
+            id="nav-game"
+            class="hud-display hud-glow mt-6 block text-2xl"
+          >
+            <.icon name={@game.icon} class="hud-collapsed-only size-8" />
+            <span class="hud-label flex items-center gap-3">
+              <.icon name={@game.icon} class="size-8" /> {@game.short_name}
+            </span>
+          </.link>
+        </div>
+
+        <nav id="game-nav" class="hud-mono flex flex-1 flex-col gap-1 overflow-y-auto">
+          <%= if @game do %>
+            <.side_link navigate={"/#{@game.slug}"} icon="lucide:castle" current={is_nil(@active)}>
+              Dashboard
+            </.side_link>
+            <%= for feature <- @game.features do %>
+              <.side_link
+                navigate={feature.path}
+                icon={feature.icon}
+                current={@active == feature.id}
+                disabled={is_nil(feature.path)}
+              >
+                {feature.name}
+              </.side_link>
+            <% end %>
+          <% else %>
+            <.side_link navigate={~p"/"} icon="lucide:dices" current>Jeux</.side_link>
+          <% end %>
+        </nav>
+
+        <div class="hud-mono border-t border-(--accent)/15 p-4 text-[0.65rem] text-zinc-400">
+          <ul class="hud-label space-y-3 px-1">
+            <%= if @current_scope do %>
+              <li class="truncate normal-case tracking-normal text-zinc-500">
+                {@current_scope.user.email}
+              </li>
+              <li><.link href={~p"/users/settings"} class="hover:text-white">Settings</.link></li>
+              <li>
+                <.link href={~p"/users/log-out"} method="delete" class="hover:text-white">
+                  Log out
+                </.link>
+              </li>
+            <% else %>
+              <li><.link href={~p"/users/log-in"} class="hud-tag">Log in</.link></li>
+              <li><.link href={~p"/users/register"} class="hover:text-white">Register</.link></li>
+            <% end %>
+          </ul>
+          <button
+            type="button"
+            id="sidebar-toggle"
+            aria-label="Réduire ou agrandir le menu"
+            phx-click={JS.dispatch("phx:toggle-sidebar")}
+            class="hud-collapse-btn mt-4 hidden w-full items-center gap-3 px-1 py-2 text-zinc-500 transition hover:text-white lg:flex"
+          >
+            <.icon name="lucide:chevrons-left" class="hud-chevron size-4 transition" />
+            <span class="hud-label">Réduire</span>
+          </button>
+        </div>
+      </aside>
+
+      <main class="hud-main relative z-10">
         {render_slot(@inner_block)}
-      </div>
-    </main>
+      </main>
 
-    <.flash_group flash={@flash} />
+      <.flash_group flash={@flash} />
+    </div>
+    """
+  end
+
+  attr :navigate, :string, default: nil
+  attr :icon, :string, required: true
+  attr :current, :boolean, default: false
+  attr :disabled, :boolean, default: false
+  slot :inner_block, required: true
+
+  defp side_link(assigns) do
+    ~H"""
+    <%= if @disabled do %>
+      <span
+        title={render_slot(@inner_block)}
+        class="flex items-center gap-3 whitespace-nowrap px-6 py-2.5 text-[0.7rem] text-zinc-600"
+      >
+        <.icon name={@icon} class="size-4 shrink-0" />
+        <span class="hud-label">{render_slot(@inner_block)}</span>
+        <span class="hud-label ml-auto text-[0.55rem]">locked</span>
+      </span>
+    <% else %>
+      <.link
+        navigate={@navigate}
+        title={render_slot(@inner_block)}
+        aria-current={if(@current, do: "page")}
+        class={[
+          "flex items-center gap-3 whitespace-nowrap border-l-2 px-5 py-2.5 text-[0.7rem] transition",
+          if(@current,
+            do:
+              "border-(--accent) bg-(--accent)/10 text-white shadow-[inset_12px_0_24px_-16px_var(--accent)]",
+            else: "border-transparent text-zinc-400 hover:border-(--accent)/50 hover:text-white"
+          )
+        ]}
+      >
+        <.icon name={@icon} class="size-4 shrink-0" />
+        <span class="hud-label">{render_slot(@inner_block)}</span>
+      </.link>
+    <% end %>
     """
   end
 
@@ -100,7 +234,7 @@ defmodule GameHubWeb.Layouts do
         hidden
       >
         {gettext("Attempting to reconnect")}
-        <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
+        <.icon name="lucide:loader-circle" class="ml-1 size-3 motion-safe:animate-spin" />
       </.flash>
 
       <.flash
@@ -115,7 +249,7 @@ defmodule GameHubWeb.Layouts do
         hidden
       >
         {gettext("Attempting to reconnect")}
-        <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
+        <.icon name="lucide:loader-circle" class="ml-1 size-3 motion-safe:animate-spin" />
       </.flash>
     </div>
     """
@@ -136,7 +270,7 @@ defmodule GameHubWeb.Layouts do
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="system"
       >
-        <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="lucide:monitor" class="size-4 opacity-75 hover:opacity-100" />
       </button>
 
       <button
@@ -144,7 +278,7 @@ defmodule GameHubWeb.Layouts do
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="light"
       >
-        <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="lucide:sun" class="size-4 opacity-75 hover:opacity-100" />
       </button>
 
       <button
@@ -152,7 +286,7 @@ defmodule GameHubWeb.Layouts do
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="dark"
       >
-        <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="lucide:moon" class="size-4 opacity-75 hover:opacity-100" />
       </button>
     </div>
     """

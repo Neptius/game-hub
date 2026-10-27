@@ -9,10 +9,6 @@
 /* Required for Tailwind to automatically pick up changes in colocated CSS files in dev */
 @source "../../_build/dev/phoenix-colocated/game_hub/*/";
 
-/* A Tailwind plugin that makes "hero-#{ICON}" classes available.
-   The heroicons installation itself is managed by your mix.exs */
-@plugin "../vendor/heroicons";
-
 /* daisyUI Tailwind Plugin. */
 @plugin "daisyui/packages/bundle/daisyui" {
   themes: false;
@@ -103,3 +99,156 @@
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
 /* This file is for your main application CSS */
+
+/* ---------- GameHub HUD design system ---------- */
+.hud-root {
+  --accent: #22d3ee;
+  --accent-alt: #7c3aed;
+  --cut: 18px;
+  font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  background-color: #05060a;
+  background-image:
+    radial-gradient(60% 50% at 50% -10%, color-mix(in srgb, var(--accent) 22%, transparent), transparent),
+    radial-gradient(40% 40% at 100% 100%, color-mix(in srgb, var(--accent-alt) 25%, transparent), transparent),
+    linear-gradient(color-mix(in srgb, var(--accent) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 7%, transparent) 1px, transparent 1px);
+  background-size: auto, auto, 44px 44px, 44px 44px;
+  background-attachment: fixed;
+}
+
+.hud-root::after {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px);
+  mix-blend-mode: overlay;
+}
+
+.hud-mono {
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.hud-display {
+  font-family: "Impact", "Haettenschweiler", "Arial Narrow Bold", ui-sans-serif, sans-serif;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  font-style: italic;
+}
+
+.hud-glow { color: var(--accent); text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 70%, transparent); }
+
+/* Angular panel: outer shape = border colour, ::before = body inset by 1px with the same cut */
+.hud-panel {
+  --border: color-mix(in srgb, var(--accent) 35%, transparent);
+  position: relative;
+  isolation: isolate;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background: var(--border);
+  transition: transform .25s ease, filter .25s ease;
+}
+
+.hud-panel::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  clip-path: polygon(calc(var(--cut) - .42px) 0, 100% 0, 100% calc(100% - var(--cut) + .42px), calc(100% - var(--cut) + .42px) 100%, 0 100%, 0 calc(var(--cut) - .42px));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, #0b0d14), #090b11 60%);
+  box-shadow: inset 0 0 0 0 transparent;
+  transition: box-shadow .25s ease;
+}
+
+a.hud-panel:hover {
+  --border: var(--accent);
+  transform: translateY(-3px);
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--accent) 45%, transparent));
+}
+
+a.hud-panel:hover::before { box-shadow: inset 0 0 40px color-mix(in srgb, var(--accent) 18%, transparent); }
+
+.hud-panel-off { --border: rgba(255,255,255,.1) !important; opacity: .55; }
+.hud-panel-off::before { background: #0a0c12; }
+
+.hud-btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .7rem 1.4rem;
+  font-weight: 700; font-size: .8rem;
+  color: #04050a; background: var(--accent);
+  clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+  transition: filter .2s, transform .2s, box-shadow .2s;
+}
+.hud-btn:hover { filter: brightness(1.2) saturate(1.1); transform: translateX(2px); }
+
+.hud-tag {
+  display: inline-block; padding: .15rem .6rem;
+  font-size: .65rem; color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.hud-bar { height: 4px; background: rgba(255,255,255,.08); overflow: hidden; }
+.hud-bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-alt)); box-shadow: 0 0 10px var(--accent); }
+
+@keyframes hud-pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+.hud-dot { width: .5rem; height: .5rem; border-radius: 9999px; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: hud-pulse 2s infinite; }
+
+@keyframes hud-rise { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
+.hud-rise { animation: hud-rise .6s cubic-bezier(.2,.7,.2,1) both; }
+
+.hud-tab { position: relative; padding: .7rem 1rem; font-size: .7rem; color: #8b93a7; transition: color .2s; }
+.hud-tab:hover, .hud-tab[aria-current="page"] { color: #fff; }
+.hud-tab[aria-current="page"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+
+/* ---------- Sidebar: collapsible on desktop, off-canvas on mobile ---------- */
+.hud-side {
+  position: fixed; inset: 0 auto 0 0; width: 16rem;
+  background: rgba(4, 6, 10, .92); backdrop-filter: blur(12px);
+  border-right: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  transform: translateX(-100%);
+  transition: transform .3s cubic-bezier(.2,.7,.2,1), width .25s ease;
+}
+.hud-side[data-open] { transform: none; }
+.hud-side-backdrop {
+  position: fixed; inset: 0; z-index: 35; background: rgba(0,0,0,.6);
+  opacity: 0; pointer-events: none; transition: opacity .3s;
+}
+#app-shell:has(.hud-side[data-open]) .hud-side-backdrop { opacity: 1; pointer-events: auto; }
+.hud-side .hud-collapsed-only { display: none; }
+
+@media (min-width: 1024px) {
+  .hud-side { transform: none; }
+  .hud-side-backdrop { display: none; }
+  .hud-main { padding-left: 16rem; transition: padding-left .25s ease; }
+
+  html[data-sidebar="collapsed"] .hud-side { width: 5rem; }
+  html[data-sidebar="collapsed"] .hud-main { padding-left: 5rem; }
+  html[data-sidebar="collapsed"] .hud-label { display: none; }
+  html[data-sidebar="collapsed"] .hud-side .hud-collapsed-only { display: inline-block; }
+  html[data-sidebar="collapsed"] .hud-side-head { padding-inline: 0; text-align: center; }
+  html[data-sidebar="collapsed"] .hud-side-head > div { justify-content: center; }
+  html[data-sidebar="collapsed"] .hud-side nav a,
+  html[data-sidebar="collapsed"] .hud-side nav > span { justify-content: center; padding-inline: 0; }
+  html[data-sidebar="collapsed"] .hud-chevron { transform: rotate(180deg); }
+  html[data-sidebar="collapsed"] .hud-collapse-btn { justify-content: center; padding-inline: 0; }
+}
+
+/* Form controls (daisyUI) restyled for the HUD */
+.hud-root :is(.input, .select, .textarea) {
+  border-radius: 0;
+  background-color: rgba(0, 0, 0, .5);
+  border-color: color-mix(in srgb, var(--accent) 25%, transparent);
+  box-shadow: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.hud-root :is(.input, .select, .textarea):focus,
+.hud-root :is(.input, .select, .textarea):focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 14px -3px var(--accent);
+  outline: none;
+}
+.hud-root .label { color: color-mix(in srgb, var(--accent) 75%, white); font-size: .65rem; text-transform: uppercase; letter-spacing: .12em; }
+.hud-root .btn { border-radius: 0; }

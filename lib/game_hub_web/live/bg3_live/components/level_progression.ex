@@ -12,10 +12,10 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
 
   def level_progression(assigns) do
     ~H"""
-    <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+    <div class="hud-panel p-4">
       <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 class="text-lg font-semibold text-white">Progression</h2>
+          <h2 class="hud-mono text-sm font-bold text-white">Progression</h2>
           <p class="mt-1 text-xs text-zinc-400">
             Niveaux 1 à {@max_level}. Une classe conserve la même sous-classe sur toute la progression.
           </p>
@@ -26,7 +26,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
             type="button"
             phx-click="remove_level"
             disabled={length(@levels) <= 1}
-            class="rounded-lg border border-zinc-600 px-3 py-2 text-sm font-medium text-zinc-200 transition hover:border-amber-400 disabled:cursor-not-allowed disabled:opacity-30"
+            class="hud-mono border border-(--accent)/40 px-3 py-2 text-xs font-medium text-zinc-200 transition hover:bg-(--accent)/15 hover:text-(--accent) disabled:cursor-not-allowed disabled:opacity-30"
           >
             − Niveau
           </button>
@@ -35,7 +35,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
             type="button"
             phx-click="add_level"
             disabled={!can_add_level?(@levels, @max_level)}
-            class="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm font-medium text-amber-300 transition hover:bg-amber-500/20 disabled:cursor-not-allowed disabled:opacity-30"
+            class="hud-mono border border-(--accent)/50 bg-(--accent)/10 px-3 py-2 text-xs font-medium text-(--accent) transition hover:bg-(--accent)/25 disabled:cursor-not-allowed disabled:opacity-30"
           >
             + Niveau
           </button>
@@ -51,7 +51,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
 
       <div
         :if={@progression_errors != []}
-        class="mb-4 space-y-1 rounded-lg border border-red-500/40 bg-red-500/10 p-3"
+        class="mb-4 space-y-1 border-l-2 border-red-500 bg-red-500/10 p-3"
       >
         <p :for={error <- @progression_errors} class="text-sm text-red-300">
           {error}
@@ -62,7 +62,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
         <div
           :for={entry <- @progression}
           id={"level-#{entry.level}"}
-          class="rounded-xl border border-zinc-700 bg-zinc-950/60 p-3"
+          class="border border-(--accent)/20 bg-black/40 p-3"
         >
           <div :if={entry.class_level} class="flex flex-row items-center justify-between w-full mb-3">
             <div class="text-sm text-zinc-400">
@@ -72,7 +72,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
           </div>
 
           <div class="grid gap-2 sm:grid-cols-[2.5rem_1fr_1fr] sm:items-end">
-            <div class="flex h-10 w-10 items-center justify-center self-end rounded-lg bg-zinc-900 text-base font-bold text-white">
+            <div class="flex h-10 w-10 items-center justify-center self-end border border-(--accent)/30 bg-black/50 hud-mono text-base font-bold text-white">
               {entry.level}
             </div>
 
@@ -84,7 +84,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
               <select
                 name={"level_class[#{entry.level}]"}
                 phx-change="set_level_class"
-                class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-100 focus:border-amber-400 focus:outline-none"
+                class="w-full border border-(--accent)/25 bg-black/50 px-3 py-1.5 text-sm text-zinc-100 focus:border-(--accent) focus:shadow-[0_0_12px_-2px_var(--accent)] focus:outline-none"
               >
                 <option value="" selected={is_nil(entry.class_id)}>— Choisir —</option>
                 <option
@@ -107,7 +107,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
                 phx-change="set_level_subclass"
                 disabled={subclass_disabled?(entry, @progression)}
                 class={[
-                  "w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-100 focus:border-amber-400 focus:outline-none",
+                  "w-full border border-(--accent)/25 bg-black/50 px-3 py-1.5 text-sm text-zinc-100 focus:border-(--accent) focus:shadow-[0_0_12px_-2px_var(--accent)] focus:outline-none",
                   subclass_disabled?(entry, @progression) && "cursor-not-allowed opacity-50"
                 ]}
               >
@@ -123,8 +123,8 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
             </div>
           </div>
 
-          <div :if={entry.feat_slot?} class="mt-3 border-t border-zinc-800 pt-3">
-            <label class="mb-1 block text-xs uppercase tracking-wide text-amber-400">
+          <div :if={entry.feat_slot?} class="mt-3 border-t border-(--accent)/15 pt-3">
+            <label class="hud-mono mb-1 block text-[0.65rem] text-(--accent)">
               🏅 Don (niveau {entry.class_level} en {ClassCatalog.class_name(@catalog, entry.class_id)})
             </label>
 
@@ -134,14 +134,14 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
               value={entry.feat}
               phx-blur="set_level_feat"
               placeholder="Ex: Combattant expérimenté, Athlète, Résilient..."
-              class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-amber-400 focus:outline-none"
+              class="w-full border border-(--accent)/25 bg-black/50 px-3 py-2 text-sm text-zinc-100 focus:border-(--accent) focus:shadow-[0_0_12px_-2px_var(--accent)] focus:outline-none"
             />
           </div>
 
-          <div :if={entry.class_passive_slot?} class="mt-4 border-t border-zinc-800 pt-4">
+          <div :if={entry.class_passive_slot?} class="mt-4 border-t border-(--accent)/15 pt-4">
             <div class="mb-3 flex items-center justify-between gap-3">
               <div>
-                <p class="text-xs font-semibold uppercase tracking-wide text-amber-400">
+                <p class="hud-mono hud-glow text-xs font-bold">
                   Passifs de classe
                 </p>
 
@@ -162,11 +162,11 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
               <label
                 :for={class_passive <- ClassCatalog.class_passives_for(@catalog, entry.class_id)}
                 class={[
-                  "flex items-center gap-3 rounded-lg border px-3 py-2 transition",
+                  "flex items-center gap-3 border px-3 py-2 transition",
                   class_passive.id in (entry.class_passive_ids || []) &&
-                    "cursor-pointer border-amber-400/70 bg-amber-500/10",
+                    "cursor-pointer border-(--accent) bg-(--accent)/10",
                   class_passive.id not in (entry.class_passive_ids || []) &&
-                    "cursor-pointer border-zinc-700 hover:border-zinc-500"
+                    "cursor-pointer border-(--accent)/20 hover:border-(--accent)/60"
                 ]}
               >
                 <input
@@ -179,7 +179,7 @@ defmodule GameHubWeb.Bg3Live.Components.LevelProgression do
                     length(entry.class_passive_ids || []) >= Leveling.class_passives_per_slot() and
                       class_passive.id not in (entry.class_passive_ids || [])
                   }
-                  class="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-amber-500 focus:ring-amber-500 disabled:cursor-not-allowed disabled:opacity-40"
+                  class="h-4 w-4 border-(--accent)/50 bg-black/50 text-(--accent) focus:ring-(--accent) disabled:cursor-not-allowed disabled:opacity-40"
                 />
 
                 <span class="text-sm text-zinc-200">

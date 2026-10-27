@@ -13,25 +13,30 @@ defmodule GameHubWeb.Bg3Live.Show do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      game={GameHub.Games.get!("bg3")}
+      active={:characters}
+    >
       <div class="mx-auto max-w-4xl px-4 py-10">
         <div class="mb-8 flex items-center justify-between">
           <div>
-            <p class="text-sm uppercase tracking-[0.2em] text-zinc-400">Baldur's Gate 3</p>
-            <h1 class="mt-2 text-3xl font-bold text-zinc-100">{@character.name}</h1>
+            <p class="hud-mono hud-glow text-xs">&gt; character_sheet</p>
+            <h1 class="hud-display mt-2 text-5xl">{@character.name}</h1>
           </div>
 
           <div class="flex gap-3">
             <.link
-              navigate={~p"/baldurs-gate-3/characters/#{@character.id}/edit"}
-              class="rounded-xl border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-100 hover:border-zinc-500"
+              navigate={~p"/bg3/characters/#{@character.id}/edit"}
+              class="hud-mono border border-(--accent)/40 px-4 py-2 text-xs font-medium text-zinc-100 transition hover:bg-(--accent)/15"
             >
               Modifier
             </.link>
 
             <.link
-              navigate={~p"/baldurs-gate-3/characters"}
-              class="rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-zinc-950 hover:bg-amber-400"
+              navigate={~p"/bg3/characters"}
+              class="hud-btn hud-mono"
             >
               Retour
             </.link>
@@ -39,7 +44,7 @@ defmodule GameHubWeb.Bg3Live.Show do
         </div>
 
         <div class="grid gap-6 lg:grid-cols-2">
-          <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6">
+          <div class="hud-panel p-6">
             <h2 class="mb-4 text-xl font-semibold text-white">Identité</h2>
             <dl class="space-y-3 text-sm text-zinc-300">
               <div class="flex justify-between gap-4">
@@ -69,77 +74,77 @@ defmodule GameHubWeb.Bg3Live.Show do
             </dl>
           </div>
 
-          <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6">
+          <div class="hud-panel p-6">
             <h2 class="mb-4 text-xl font-semibold text-white">Caractéristiques</h2>
             <dl class="grid grid-cols-1 gap-1.5 text-sm text-zinc-300">
-              <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/60 px-3 py-1.5">
+              <div class="flex items-center justify-between gap-3 border-l-2 border-(--accent)/40 bg-black/40 px-3 py-1.5">
                 <dt class="text-zinc-500">Force</dt>
                 <dd class="flex items-baseline gap-2">
                   <span class="font-semibold text-white">
                     {@character.strength}
                   </span>
 
-                  <span class="text-xs font-bold text-amber-400">
+                  <span class="text-xs font-bold text-(--accent)">
                     {ability_modifier_label(@character.strength)}
                   </span>
                 </dd>
               </div>
-              <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/60 px-3 py-1.5">
+              <div class="flex items-center justify-between gap-3 border-l-2 border-(--accent)/40 bg-black/40 px-3 py-1.5">
                 <dt class="text-zinc-500">Dextérité</dt>
                 <dd class="flex items-baseline gap-2">
                   <span class="font-semibold text-white">
                     {@character.dexterity}
                   </span>
 
-                  <span class="text-xs font-bold text-amber-400">
+                  <span class="text-xs font-bold text-(--accent)">
                     {ability_modifier_label(@character.dexterity)}
                   </span>
                 </dd>
               </div>
-              <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/60 px-3 py-1.5">
+              <div class="flex items-center justify-between gap-3 border-l-2 border-(--accent)/40 bg-black/40 px-3 py-1.5">
                 <dt class="text-zinc-500">Constitution</dt>
                 <dd class="flex items-baseline gap-2">
                   <span class="font-semibold text-white">
                     {@character.constitution}
                   </span>
 
-                  <span class="text-xs font-bold text-amber-400">
+                  <span class="text-xs font-bold text-(--accent)">
                     {ability_modifier_label(@character.constitution)}
                   </span>
                 </dd>
               </div>
-              <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/60 px-3 py-1.5">
+              <div class="flex items-center justify-between gap-3 border-l-2 border-(--accent)/40 bg-black/40 px-3 py-1.5">
                 <dt class="text-zinc-500">Intelligence</dt>
                 <dd class="flex items-baseline gap-2">
                   <span class="font-semibold text-white">
                     {@character.intelligence}
                   </span>
 
-                  <span class="text-xs font-bold text-amber-400">
+                  <span class="text-xs font-bold text-(--accent)">
                     {ability_modifier_label(@character.intelligence)}
                   </span>
                 </dd>
               </div>
-              <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/60 px-3 py-1.5">
+              <div class="flex items-center justify-between gap-3 border-l-2 border-(--accent)/40 bg-black/40 px-3 py-1.5">
                 <dt class="text-zinc-500">Sagesse</dt>
                 <dd class="flex items-baseline gap-2">
                   <span class="font-semibold text-white">
                     {@character.wisdom}
                   </span>
 
-                  <span class="text-xs font-bold text-amber-400">
+                  <span class="text-xs font-bold text-(--accent)">
                     {ability_modifier_label(@character.wisdom)}
                   </span>
                 </dd>
               </div>
-              <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/60 px-3 py-1.5">
+              <div class="flex items-center justify-between gap-3 border-l-2 border-(--accent)/40 bg-black/40 px-3 py-1.5">
                 <dt class="text-zinc-500">Charisme</dt>
                 <dd class="flex items-baseline gap-2">
                   <span class="font-semibold text-white">
                     {@character.charisma}
                   </span>
 
-                  <span class="text-xs font-bold text-amber-400">
+                  <span class="text-xs font-bold text-(--accent)">
                     {ability_modifier_label(@character.charisma)}
                   </span>
                 </dd>
@@ -148,7 +153,7 @@ defmodule GameHubWeb.Bg3Live.Show do
           </div>
         </div>
 
-        <div :if={@character.notes} class="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6">
+        <div :if={@character.notes} class="mt-6 hud-panel p-6">
           <h2 class="mb-3 text-xl font-semibold text-white">Notes</h2>
           <p class="whitespace-pre-wrap text-zinc-300">{@character.notes}</p>
         </div>
