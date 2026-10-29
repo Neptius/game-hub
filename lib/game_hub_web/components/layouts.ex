@@ -42,8 +42,8 @@ defmodule GameHubWeb.Layouts do
   def app(assigns) do
     assigns =
       assigns
-      |> assign(:accent, if(assigns.game, do: assigns.game.accent, else: "#22d3ee"))
-      |> assign(:accent_alt, if(assigns.game, do: assigns.game.accent_alt, else: "#7c3aed"))
+      |> assign(:accent, if(assigns.game, do: assigns.game.accent, else: "#fcee0a"))
+      |> assign(:accent_alt, if(assigns.game, do: assigns.game.accent_alt, else: "#ff2a6d"))
 
     ~H"""
     <div

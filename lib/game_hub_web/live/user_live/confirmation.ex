@@ -7,7 +7,7 @@ defmodule GameHubWeb.UserLive.Confirmation do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto max-w-sm">
+      <div class="hud-panel mx-auto my-8 max-w-sm p-6 sm:my-16 sm:p-8">
         <div class="text-center">
           <.header>Welcome {@user.email}</.header>
         </div>

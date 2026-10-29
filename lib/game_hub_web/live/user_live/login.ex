@@ -7,7 +7,7 @@ defmodule GameHubWeb.UserLive.Login do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto max-w-sm space-y-4">
+      <div class="hud-panel mx-auto my-8 max-w-sm space-y-4 p-6 sm:my-16 sm:p-8">
         <div class="text-center">
           <.header>
             <p>Log in</p>
